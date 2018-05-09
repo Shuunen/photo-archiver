@@ -1,0 +1,24 @@
+{
+  "name": "photo-archiver",
+  "version": "0.0.1",
+  "main": "index.ts",
+  "repository": "git@github.com:Shuunen/photo-archiver.git",
+  "author": "Romain Racamier-Lafon <romain.racamier@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "dev": "nodemon",
+    "lint": "tslint -c tslint.json 'src/**/*.ts'"
+  },
+  "dependencies": {
+    "chalk": "^2.4.1",
+    "figures": "^2.0.0",
+    "inquirer": "^5.2.0",
+    "typescript": "^2.8.3"
+  },
+  "devDependencies": {
+    "nodemon": "^1.17.4",
+    "ts-node": "^6.0.3"
+  }
+}
