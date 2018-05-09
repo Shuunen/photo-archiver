@@ -7,7 +7,7 @@
         "node": true
     },
     "globals": {
-        "process": false,
+        "process": false
     },
     "jsRules": {},
     "rules": {
@@ -58,7 +58,7 @@
         "no-invalid-this": true,
         "no-irregular-whitespace": true,
         "no-misused-new": true,
-        "no-object-literal-type-assertion": true,
+        "no-object-literal-type-assertion": false,
         "no-parameter-reassignment": true,
         "no-shadowed-variable": true,
         "no-string-literal": true,
@@ -77,8 +77,7 @@
         ],
         "object-literal-sort-keys": [
             true,
-            "ignore-case",
-            "match-declaration-order"
+            "ignore-case"
         ],
         "one-variable-per-declaration": true,
         "ordered-imports": true,
@@ -104,15 +103,6 @@
             }
         ],
         "triple-equals": true,
-        "typedef": [
-            true,
-            "call-signature",
-            "parameter",
-            "property-declaration",
-            "variable-declaration",
-            "member-variable-declaration",
-            "array-destructuring"
-        ],
         "typeof-compare": true
     },
     "rulesDirectory": []
