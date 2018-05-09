@@ -15,9 +15,11 @@
     "chalk": "^2.4.1",
     "figures": "^2.0.0",
     "inquirer": "^5.2.0",
+    "minimist": "^1.2.0",
     "typescript": "^2.8.3"
   },
   "devDependencies": {
+    "@types/node": "^10.0.6",
     "nodemon": "^1.17.4",
     "ts-node": "^6.0.3"
   }

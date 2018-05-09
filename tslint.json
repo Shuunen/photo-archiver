@@ -3,6 +3,12 @@
     "extends": [
         "tslint:recommended"
     ],
+    "env": {
+        "node": true
+    },
+    "globals": {
+        "process": false,
+    },
     "jsRules": {},
     "rules": {
         "align": false,
