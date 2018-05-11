@@ -125,7 +125,7 @@ function checkPhotos(photos, dir) {
 
 function checkNextDir() {
   if (!dirs.length) {
-    return Promise.resolve('no more directory to check')
+    return Promise.resolve('no more directories to check')
   }
   // extract first
   const dir = dirs.shift() // full path
