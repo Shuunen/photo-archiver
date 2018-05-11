@@ -83,7 +83,7 @@ function compress(photo) {
     }
     // log('compressing "' + photo + '"')
     const photoIn = photo
-    const photoOut = config.overwrite ? photo : photo.replace('.jp', config.suffix + '.jp')
+    const photoOut = config.overwrite ? photo : photo.replace(/(\.j)/i, config.suffix + '$1')
     const command = `jpeg-recompress --method smallfry "${photoIn}" "${photoOut}"`
     // log('executing command :', command)
     exec(command, (err, stdout, stderr) => {
@@ -142,7 +142,7 @@ function checkNextDir() {
     log('detected year "' + year + '" and month "' + month + '"')
   }
   let oDir = { name: dirName, year, month }
-  return globby(join(dir, '**/*.(jpg|jpeg)'))
+  return globby(join(dir, '**/*.(jpg|jpeg)'), { nocase: true })
     .then((photos) => checkPhotos(photos, oDir))
     .then(status => log(status))
     .then(() => checkNextDir())
@@ -155,9 +155,11 @@ function showMetrics() {
   if (timeElapsed > 120) {
     timeReadable = Math.round(timeElapsed / 60 * 10) / 10 + ' minutes'
   }
-  const averageTimePerPhoto = Math.round(timeElapsed / photosProcessed * 100) / 100 || 1
+  const averageTimePerPhoto = (Math.round(timeElapsed / photosProcessed * 100) / 100) || 0
   log(`processed ${photosProcessed} photos in ${timeReadable}`)
-  log(`with an average of ${averageTimePerPhoto} seconds per photo`)
+  if (timeElapsed) {
+    log(`with an average of ${averageTimePerPhoto} seconds per photo`)
+  }
 }
 
 function start() {
