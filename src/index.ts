@@ -10,6 +10,7 @@ import { exec } from 'child_process'
 const argv = minimist(process.argv.slice(2))
 let basepath = process.cwd()
 const dirs = []
+let startTime = null
 let config = {
   overwrite: false,
   suffix: '-compressed' // my-photo.jpg => my-photo-compressed.jpg
@@ -25,16 +26,18 @@ const questions = [
   },
 ]
 
-function log(...thing): void {
-  console.log(...thing) // tslint:disable-line:no-console
+function log(...things): Promise<string> {
+  console.log(...things) // tslint:disable-line:no-console
+  return Promise.resolve('log')
 }
 
-function warn(...thing): void {
-  console.error(chalk.yellowBright(figures.pointer, ...thing)) // tslint:disable-line:no-console
+function warn(...things): Promise<string> {
+  console.error(chalk.yellowBright(figures.pointer, ...things)) // tslint:disable-line:no-console
+  return Promise.resolve('warn')
 }
 
-function error(...thing): void {
-  console.error(chalk.redBright(figures.cross, ...thing)) // tslint:disable-line:no-console
+function error(...things): void {
+  console.error(chalk.redBright(figures.cross, ...things)) // tslint:disable-line:no-console
 }
 
 function getDirectories(path) {
@@ -43,25 +46,33 @@ function getDirectories(path) {
   })
 }
 
+function getTimestamp() {
+  return Math.round(Date.now() / 1000)
+}
+
 function getPath() {
   if (argv.path) {
     basepath = argv.path
   }
   log('will use basepath :', basepath)
+  return Promise.resolve('success')
 }
 
 function getDirs() {
-  getDirectories(basepath).map((dir) => {
-    // dir will be succesivly 2013, 2014,...
-    const subDir = join(basepath, dir)
-    // log('subDir', subDir)
-    getDirectories(subDir).forEach((sub) => dirs.push(join(subDir, sub)))
+  return new Promise((resolve, reject) => {
+    getDirectories(basepath).map((dir) => {
+      // dir will be succesivly 2013, 2014,...
+      const subDir = join(basepath, dir)
+      // log('subDir', subDir)
+      getDirectories(subDir).forEach((sub) => dirs.push(join(subDir, sub)))
+    })
+    // if no subdir, just process input dir
+    if (!dirs.length) {
+      dirs.push(basepath)
+    }
+    log('found dir(s)', dirs)
+    resolve('success')
   })
-  // if no subdir, just process input dir
-  if (!dirs.length) {
-    dirs.push(basepath)
-  }
-  log('found dir(s)', dirs)
 }
 
 function compress(photo) {
@@ -95,14 +106,27 @@ function compress(photo) {
   })
 }
 
+function compressPhotos(photos) {
+  if (!photos.length) {
+    return Promise.resolve('no more photos in this directory')
+  }
+  // extract first
+  const photo = photos.shift()
+  return compress(photo)
+    .then(() => compressPhotos(photos))
+    .catch(err => error(err))
+}
+
 function checkPhotos(photos, dir) {
   log('found', photos.length, 'photos in dir "' + dir.name + '"')
   // log(photos)
-  photos.forEach(async photo => await compress(photo))
-  log('processed', photosProcessed, 'photos')
+  return compressPhotos(photos)
 }
 
 function checkNextDir() {
+  if (!dirs.length) {
+    return Promise.resolve('no more directory to check')
+  }
   // extract first
   const dir = dirs.shift() // full path
   const dirName = basename(dir) // directory/folder name
@@ -118,21 +142,36 @@ function checkNextDir() {
     log('detected year "' + year + '" and month "' + month + '"')
   }
   let oDir = { name: dirName, year, month }
-  globby(join(dir, '**/*.(jpg|jpeg)'))
+  return globby(join(dir, '**/*.(jpg|jpeg)'))
     .then((photos) => checkPhotos(photos, oDir))
-    .catch((err) => {
-      error(err)
-    });
+    .then(status => log(status))
+    .then(() => checkNextDir())
+    .catch(err => error(err))
+}
+
+function showMetrics() {
+  const timeElapsed = getTimestamp() - startTime
+  let timeReadable = timeElapsed + ' seconds'
+  if (timeElapsed > 120) {
+    timeReadable = Math.round(timeElapsed / 60 * 10) / 10 + ' minutes'
+  }
+  const averageTimePerPhoto = Math.round(timeElapsed / photosProcessed * 100) / 100 || 1
+  log(`processed ${photosProcessed} photos in ${timeReadable}`)
+  log(`with an average of ${averageTimePerPhoto} seconds per photo`)
 }
 
 function start() {
   log('Photo Archiver is starting...')
   inquirer.prompt(questions).then(answers => {
     config = { ...config, ...answers }
+    startTime = getTimestamp()
     log('start with config :', config)
-    getPath()
-    getDirs()
-    checkNextDir()
+      .then(() => getPath())
+      .then(() => getDirs())
+      .then(() => checkNextDir())
+      .then(status => log(status))
+      .catch((err) => error(err))
+      .then(() => showMetrics())
   })
 }
 
