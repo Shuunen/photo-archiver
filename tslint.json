@@ -3,13 +3,6 @@
     "extends": [
         "tslint:recommended"
     ],
-    "env": {
-        "node": true
-    },
-    "globals": {
-        "process": false
-    },
-    "jsRules": {},
     "rules": {
         "align": false,
         "arrow-parens": false,
@@ -30,6 +23,7 @@
         "deprecation": true,
         "encoding": true,
         "import-spacing": true,
+        "interface-name": false,
         "indent": [
             true,
             "spaces",
@@ -104,6 +98,5 @@
         ],
         "triple-equals": true,
         "typeof-compare": true
-    },
-    "rulesDirectory": []
+    }
 }
