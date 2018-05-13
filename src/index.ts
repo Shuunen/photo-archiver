@@ -8,16 +8,23 @@ import { basename, join } from 'path'
 import { exec } from 'child_process'
 
 const argv = minimist(process.argv.slice(2))
-let basepath = process.cwd()
+const currentPath = process.cwd()
 const dirs = []
 let startTime = null
 let config = {
-  overwrite: false,
+  basepath: argv.path || currentPath,
+  overwrite: false, // true : will replace original photos / false : will use below suffix and create new files
   suffix: '-compressed' // my-photo.jpg => my-photo-compressed.jpg
 }
 declare const Promise: any;
 let photosProcessed = 0
 const questions = [
+  {
+    type: 'input',
+    name: 'basepath',
+    message: 'Path to photos ?',
+    default: config.basepath
+  },
   {
     type: 'confirm',
     name: 'overwrite',
@@ -50,25 +57,17 @@ function getTimestamp() {
   return Math.round(Date.now() / 1000)
 }
 
-function getPath() {
-  if (argv.path) {
-    basepath = argv.path
-  }
-  log('will use basepath :', basepath)
-  return Promise.resolve('success')
-}
-
 function getDirs() {
   return new Promise((resolve, reject) => {
-    getDirectories(basepath).map((dir) => {
+    getDirectories(config.basepath).map((dir) => {
       // dir will be succesivly 2013, 2014,...
-      const subDir = join(basepath, dir)
+      const subDir = join(config.basepath, dir)
       // log('subDir', subDir)
       getDirectories(subDir).forEach((sub) => dirs.push(join(subDir, sub)))
     })
     // if no subdir, just process input dir
     if (!dirs.length) {
-      dirs.push(basepath)
+      dirs.push(config.basepath)
     }
     log('found dir(s)', dirs)
     resolve('success')
@@ -168,7 +167,6 @@ function start() {
     config = { ...config, ...answers }
     startTime = getTimestamp()
     log('start with config :', config)
-      .then(() => getPath())
       .then(() => getDirs())
       .then(() => checkNextDir())
       .then(status => log(status))
