@@ -12,9 +12,9 @@ const currentPath = process.cwd()
 const dirs = []
 let startTime = null
 let config = {
-  basepath: argv.path || currentPath,
+  basepath: argv.path || currentPath + '/test',
   overwrite: false, // true : will replace original photos / false : will use below suffix and create new files
-  suffix: '-compressed' // my-photo.jpg => my-photo-compressed.jpg
+  suffix: '-archived' // my-photo.jpg => my-photo-archived.jpg
 }
 declare const Promise: any;
 let photosProcessed = 0

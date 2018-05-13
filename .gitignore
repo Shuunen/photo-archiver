@@ -57,3 +57,5 @@ typings/
 # dotenv environment variables file
 .env
 
+# archived test photos
+test/**/*-archived.JPG
