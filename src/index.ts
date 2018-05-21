@@ -168,7 +168,22 @@ function getDateFromTags(tags): Date {
   throw new Error('failed at finding original date')
 }
 
-function exif(photo: string, dir: DirInfos) {
+function writeExifDate(filepath, newDateStr) {
+  return new Promise((resolve, reject) => {
+    exiftool
+      .write(filepath, { AllDates: newDateStr })
+      .then(() => {
+        // log('exiftool status after writing :', status) // status is undefined :'(
+        resolve('success, updated photo date to : ' + newDateStr)
+      })
+      .catch(err => {
+        error(err)
+        reject('failed at writing date exif')
+      })
+  })
+}
+
+function exif(photo: string, dir: DirInfos, needConfirm?: boolean) {
   return new Promise((resolve, reject) => {
     if (!dir.year && !dir.month) {
       return resolve('cannot fix exif without year and month')
@@ -196,16 +211,7 @@ function exif(photo: string, dir: DirInfos) {
           const newDateStr = dateToIsoString(newDate)
           const originalDateStr = dateToIsoString(originalDate)
           log('      should rewrite exif with this date : ' + newDateStr + ', instead of : ' + originalDateStr)
-          exiftool
-            .write(filepath, { AllDates: newDateStr })
-            .then(() => {
-              // log('exiftool status after writing :', status) // status is undefined :'(
-              resolve('success, updated photo date to : ' + newDateStr)
-            })
-            .catch(err => {
-              error(err)
-              reject('failed at writing date exif')
-            })
+          writeExifDate(filepath, newDateStr).then(r => resolve(r)).catch(r => reject(r))
         } else {
           resolve('success, date is good')
         }
@@ -220,6 +226,7 @@ function exif(photo: string, dir: DirInfos) {
 async function checkPhotos(photos: PhotoSet, dir: DirInfos) {
   const count = photos.length
   log('found', count, 'photos in dir "' + dir.name + '"')
+  let needConfirm = true
   // log(photos)
   for (let i = 0; i < count; i++) {
     const photo = photos[i]
@@ -232,8 +239,9 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos) {
     await log('processing photo', num, '(' + name + ')')
       .then(() => compress(photo))
       .then(status => log(indent, status))
-      .then(() => exif(photo, dir))
+      .then(() => exif(photo, dir, needConfirm))
       .then(status => log(indent, status))
+      .then(() => needConfirm = false)
       .catch(err => error(err))
   }
   return Promise.resolve('check photos done in dir "' + dir.name + '"')
