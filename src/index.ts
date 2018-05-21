@@ -3,7 +3,7 @@ import chalk from 'chalk'
 import { exec } from 'child_process'
 import * as ExifTool from 'exiftool-vendored'
 import * as figures from 'figures'
-import { readdirSync, statSync } from 'fs'
+import { readdirSync, statSync, unlink } from 'fs'
 import * as globby from 'globby'
 import * as inquirer from 'inquirer'
 import * as minimist from 'minimist'
@@ -49,6 +49,11 @@ function warn(...things): Promise<string> {
 function error(...things): string {
   console.error(chalk.redBright(figures.cross, ...things)) // tslint:disable-line:no-console
   return things.join(',')
+}
+
+function warnIndent(...things): Promise<string> {
+  console.error('      ' + chalk.yellowBright(figures.pointer, ...things)) // tslint:disable-line:no-console
+  return Promise.resolve('warn')
 }
 
 function getDirectories(path) {
@@ -170,11 +175,23 @@ function getDateFromTags(tags): Date {
 
 function writeExifDate(filepath, newDateStr) {
   return new Promise((resolve, reject) => {
+    log('      writing new date :', newDateStr)
+    log('      to file :', filepath)
     exiftool
       .write(filepath, { AllDates: newDateStr })
       .then(() => {
         // log('exiftool status after writing :', status) // status is undefined :'(
-        resolve('success, updated photo date to : ' + newDateStr)
+        // resolve('success, updated photo date to : ' + newDateStr)
+        log('      new date writen :)')
+        photosProcessed++
+        // if write successful, delete _original file backup created by exif-tool
+        unlink(filepath + '_original', (err) => {
+          if (err) {
+            error(err)
+          }
+        })
+        // because above unlink is async, let it work on is own and resolve now
+        resolve('success, updated photo date')
       })
       .catch(err => {
         error(err)
@@ -198,12 +215,12 @@ function exif(photo: string, dir: DirInfos, needConfirm?: boolean) {
         const month = newDate.getMonth() + 1
         let doRewrite = false
         if (year !== dir.year) {
-          warn('fixing photo year "' + year + '" => "' + dir.year + '"')
+          warnIndent('fixing photo year "' + year + '" => "' + dir.year + '"')
           newDate.setFullYear(dir.year)
           doRewrite = true
         }
         if (month !== dir.month) {
-          warn('fixing photo month "' + month + '" => "' + dir.month + '"')
+          warnIndent('fixing photo month "' + month + '" => "' + dir.month + '"')
           newDate.setMonth(dir.month - 1)
           doRewrite = true
         }
@@ -211,7 +228,20 @@ function exif(photo: string, dir: DirInfos, needConfirm?: boolean) {
           const newDateStr = dateToIsoString(newDate)
           const originalDateStr = dateToIsoString(originalDate)
           log('      should rewrite exif with this date : ' + newDateStr + ', instead of : ' + originalDateStr)
-          writeExifDate(filepath, newDateStr).then(r => resolve(r)).catch(r => reject(r))
+          if (needConfirm) {
+            inquirer.prompt([{
+              default: true, message: 'Ok for this ?', name: 'rewrite', type: 'confirm',
+            }]).then(answers => {
+              if (answers.rewrite) {
+                log('      user validated rewrite')
+                writeExifDate(filepath, newDateStr).then(r => resolve(r)).catch(r => reject(r))
+              } else {
+                reject('user abort date rewrite')
+              }
+            })
+          } else {
+            writeExifDate(filepath, newDateStr).then(r => resolve(r)).catch(r => reject(r))
+          }
         } else {
           resolve('success, date is good')
         }
@@ -226,7 +256,7 @@ function exif(photo: string, dir: DirInfos, needConfirm?: boolean) {
 async function checkPhotos(photos: PhotoSet, dir: DirInfos) {
   const count = photos.length
   log('found', count, 'photos in dir "' + dir.name + '"')
-  let needConfirm = true
+  let needConfirm = false // TODO : put this back to true
   // log(photos)
   for (let i = 0; i < count; i++) {
     const photo = photos[i]
@@ -240,8 +270,13 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos) {
       .then(() => compress(photo))
       .then(status => log(indent, status))
       .then(() => exif(photo, dir, needConfirm))
-      .then(status => log(indent, status))
-      .then(() => needConfirm = false)
+      .then(status => {
+        if (needConfirm && status.includes('updated')) {
+          log(indent, 'user validated once, turning off validation for this folder...')
+          needConfirm = false
+        }
+        return log(indent, status)
+      })
       .catch(err => error(err))
   }
   return Promise.resolve('check photos done in dir "' + dir.name + '"')
