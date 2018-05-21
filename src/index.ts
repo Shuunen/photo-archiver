@@ -1,3 +1,4 @@
+// tslint:disable:max-file-line-count
 import chalk from 'chalk'
 import { exec } from 'child_process'
 import * as ExifTool from 'exiftool-vendored'
@@ -15,7 +16,7 @@ const dirs = []
 let startTime = null
 let config = {
   basepath: argv.path || currentPath + '/test',
-  overwrite: false, // true : will replace original photos / false : will use below suffix and create new files
+  overwrite: true, // true : will replace original photos / false : will use below suffix and create new files
   suffix: '-archived', // my-photo.jpg => my-photo-archived.jpg
 }
 declare const Promise
@@ -65,8 +66,14 @@ function getDirs() {
     getDirectories(config.basepath).map((dir) => {
       // dir will be succesivly 2013, 2014,...
       const subDir = join(config.basepath, dir)
-      // log('subDir', subDir)
-      getDirectories(subDir).forEach((sub) => dirs.push(join(subDir, sub)))
+      log('dir', dir)
+      log('subDir', subDir)
+      if (dir.length === 4) {
+        // like a year 2018 that contains subfolders
+        getDirectories(subDir).forEach((sub) => dirs.push(join(subDir, sub)))
+      } else {
+        dirs.push(subDir)
+      }
     })
     // if no subdir, just process input dir
     if (!dirs.length) {
@@ -112,9 +119,53 @@ function compress(photo) {
   })
 }
 
-function dateToIsoStringWithTimezoneHandling(date) {
+function dateToIsoStringWithTimezoneHandling(date: Date): string {
   // from https://stackoverflow.com/a/37661393/1317546
   return new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString()
+}
+
+function dateToIsoString(date: Date): string {
+  let dateStr = dateToIsoStringWithTimezoneHandling(date)
+  if (dateStr[dateStr.length - 1].toLowerCase() === 'z') {
+    dateStr = dateStr.substr(0, dateStr.length - 1)
+  }
+  return dateStr
+}
+
+function zeroIfNeeded(date: number | string) {
+  let dateStr = date + ''
+  if (dateStr.length === 1) {
+    dateStr = '0' + dateStr
+  }
+  return dateStr
+}
+
+function getDateFromTags(tags): Date {
+  // log('  tags found :', tags)
+  /*  log('  ModifyDate :', tags.ModifyDate)
+   log('  CreateDate :', tags.CreateDate)
+   log('  DateCreated :', tags.DateCreated)
+   log('  TimeCreated :', tags.TimeCreated)
+   log('  DateTime :', tags.DateTime)
+   log('  DateTimeCreated :', tags.DateTimeCreated)
+   log('  DateTimeUTC :', tags.DateTimeUTC)
+   log('  DateTimeOriginal :', tags.DateTimeOriginal) */
+  // tslint:disable-next-line:no-any
+  // log('  FileCreateDate :', (tags as any).FileCreateDate)
+  if (tags.CreateDate) {
+    return new Date(tags.CreateDate + '')
+  }
+  // tslint:disable-next-line:no-any
+  const date = (tags as any).FileCreateDate
+  if (date) {
+    const month = zeroIfNeeded(date.month)
+    const day = zeroIfNeeded(date.day)
+    const hour = zeroIfNeeded(date.hour)
+    const minute = zeroIfNeeded(date.minute)
+    return new Date(date.year + '-' + month + '-' + day + 'T' + hour + ':' + minute)
+  }
+
+  throw new Error('failed at finding original date')
 }
 
 function exif(photo: string, dir: DirInfos) {
@@ -124,32 +175,32 @@ function exif(photo: string, dir: DirInfos) {
     }
     const filepath = getFinalPhotoName(photo)
     exiftool.read(filepath)
-      .then((tags: ExifTool.Tags) => {
-        const date = new Date(tags.CreateDate + '')
-        const year = date.getFullYear()
-        const month = date.getMonth() + 1
+      .then((tags: ExifTool.Tags) => getDateFromTags(tags))
+      .then(originalDate => {
+        log('      original date found :', originalDate)
+        const newDate = new Date(originalDate)
+        const year = newDate.getFullYear()
+        const month = newDate.getMonth() + 1
         let doRewrite = false
         if (year !== dir.year) {
           warn('fixing photo year "' + year + '" => "' + dir.year + '"')
-          date.setFullYear(dir.year)
+          newDate.setFullYear(dir.year)
           doRewrite = true
         }
         if (month !== dir.month) {
           warn('fixing photo month "' + month + '" => "' + dir.month + '"')
-          date.setMonth(dir.month - 1)
+          newDate.setMonth(dir.month - 1)
           doRewrite = true
         }
         if (doRewrite) {
-          let newDate = dateToIsoStringWithTimezoneHandling(date)
-          if (newDate[newDate.length - 1].toLowerCase() === 'z') {
-            newDate = newDate.substr(0, newDate.length - 1)
-          }
-          log('should rewrite exif with this date : ' + newDate + ', instead of : ' + tags.CreateDate)
+          const newDateStr = dateToIsoString(newDate)
+          const originalDateStr = dateToIsoString(originalDate)
+          log('      should rewrite exif with this date : ' + newDateStr + ', instead of : ' + originalDateStr)
           exiftool
-            .write(filepath, { AllDates: newDate })
-            .then((/* status */) => {
+            .write(filepath, { AllDates: newDateStr })
+            .then(() => {
               // log('exiftool status after writing :', status) // status is undefined :'(
-              resolve('success, updated photo date to : ' + newDate)
+              resolve('success, updated photo date to : ' + newDateStr)
             })
             .catch(err => {
               error(err)
@@ -177,7 +228,7 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos) {
       name = name.substr(0, 20) + '...'
     }
     const num = i + 1
-    const indent = '  ' + num + ' : '
+    const indent = '  ' + num + ' :'
     await log('processing photo', num, '(' + name + ')')
       .then(() => compress(photo))
       .then(status => log(indent, status))
@@ -260,7 +311,6 @@ type PhotoPath = string
 type PhotoSet = PhotoPath[]
 
 interface DirInfos {
-  /** Plop */
   name: string // folder name
   year: number
   month: number
