@@ -8,6 +8,7 @@ import * as globby from 'globby'
 import * as inquirer from 'inquirer'
 import * as minimist from 'minimist'
 import { basename, join } from 'path'
+import * as log from 'signale'
 
 const exiftool = new ExifTool.ExifTool()
 const argv = minimist(process.argv.slice(2))
@@ -36,26 +37,6 @@ const questions = [
   },
 ]
 
-function log(...things): Promise<string> {
-  console.log(...things) // tslint:disable-line:no-console
-  return Promise.resolve('log')
-}
-
-function warn(...things): Promise<string> {
-  console.error(chalk.yellowBright(figures.pointer, ...things)) // tslint:disable-line:no-console
-  return Promise.resolve('warn')
-}
-
-function error(...things): string {
-  console.error(chalk.redBright(figures.cross, ...things)) // tslint:disable-line:no-console
-  return things.join(',')
-}
-
-function warnIndent(...things): Promise<string> {
-  console.error('      ' + chalk.yellowBright(figures.pointer, ...things)) // tslint:disable-line:no-console
-  return Promise.resolve('warn')
-}
-
 function getDirectories(path) {
   return readdirSync(path).filter((file) => {
     return statSync(path + '/' + file).isDirectory()
@@ -71,8 +52,8 @@ function getDirs() {
     getDirectories(config.basepath).map((dir) => {
       // dir will be succesivly 2013, 2014,...
       const subDir = join(config.basepath, dir)
-      log('dir', dir)
-      log('subDir', subDir)
+      log.info('dir', dir)
+      log.info('subDir', subDir)
       if (dir.length === 4) {
         // like a year 2018 that contains subfolders
         getDirectories(subDir).forEach((sub) => dirs.push(join(subDir, sub)))
@@ -84,7 +65,7 @@ function getDirs() {
     if (!dirs.length) {
       dirs.push(config.basepath)
     }
-    log('found dir(s)', dirs)
+    log.info('found dir(s)', dirs)
     resolve('success')
   })
 }
@@ -93,32 +74,37 @@ function getFinalPhotoName(photo) {
   return config.overwrite ? photo : photo.replace(/(\.j)/i, config.suffix + '$1')
 }
 
-function compress(photo) {
+function compress(prefix, photo) {
   return new Promise((resolve, reject) => {
+    let message = ''
     // photo = photo.replace(/\\/g, '/')
     if (photo.indexOf(config.suffix) !== -1) {
-      return resolve('success (already processed)')
+      message = 'success (already processed)'
+      log.info({ prefix, message })
+      return resolve(message)
     }
-    // log('compressing "' + photo + '"')
+    // log.info('compressing "' + photo + '"')
     const photoIn = photo
     const photoOut = getFinalPhotoName(photo)
     const command = `bin/jpeg-recompress --method smallfry "${photoIn}" "${photoOut}"`
-    // log('executing command :', command)
+    // log.info('executing command :', command)
     exec(command, (err, stdout, stderr) => {
       if (err) {
         // node couldn't execute the command
         reject(err)
       } else {
         // the *entire* stdout and stderr (buffered)
-        // console.log(`stdout: ${stdout}`);
-        // console.log(`stderr: ${stderr}`);
+        // console.log.info(`stdout: ${stdout}`);
+        // console.log.info(`stderr: ${stderr}`);
         if (stderr.toString().indexOf('already processed') !== -1) {
-          resolve('success (already processed)')
+          message = 'success (already processed)'
+          log.info({ prefix, message })
         } else {
-          log('compressed "' + photo + '"')
+          message = 'success, compressed'
+          log.success({ prefix, message})
           photosProcessed++
-          resolve('success')
         }
+        resolve(message)
       }
     })
   })
@@ -145,18 +131,18 @@ function zeroIfNeeded(date: number | string) {
   return dateStr
 }
 
-function getDateFromTags(tags): Date {
-  // log('  tags found :', tags)
-  /*  log('  ModifyDate :', tags.ModifyDate)
-   log('  CreateDate :', tags.CreateDate)
-   log('  DateCreated :', tags.DateCreated)
-   log('  TimeCreated :', tags.TimeCreated)
-   log('  DateTime :', tags.DateTime)
-   log('  DateTimeCreated :', tags.DateTimeCreated)
-   log('  DateTimeUTC :', tags.DateTimeUTC)
-   log('  DateTimeOriginal :', tags.DateTimeOriginal) */
+function getDateFromTags(prefix, tags): Date {
+  // log.info('  tags found :', tags)
+  /*  log.info('  ModifyDate :', tags.ModifyDate)
+   log.info('  CreateDate :', tags.CreateDate)
+   log.info('  DateCreated :', tags.DateCreated)
+   log.info('  TimeCreated :', tags.TimeCreated)
+   log.info('  DateTime :', tags.DateTime)
+   log.info('  DateTimeCreated :', tags.DateTimeCreated)
+   log.info('  DateTimeUTC :', tags.DateTimeUTC)
+   log.info('  DateTimeOriginal :', tags.DateTimeOriginal) */
   // tslint:disable-next-line:no-any
-  // log('  FileCreateDate :', (tags as any).FileCreateDate)
+  // log.info('  FileCreateDate :', (tags as any).FileCreateDate)
   if (tags.CreateDate) {
     return new Date(tags.CreateDate + '')
   }
@@ -170,84 +156,94 @@ function getDateFromTags(tags): Date {
     return new Date(date.year + '-' + month + '-' + day + 'T' + hour + ':' + minute)
   }
 
-  throw new Error('failed at finding original date')
+  log.warn({prefix, message: 'failed at finding original date'})
+  return null
 }
 
-function writeExifDate(filepath, newDateStr) {
+function writeExifDate(prefix, filepath, newDateStr) {
   return new Promise((resolve, reject) => {
-    log('      writing new date :', newDateStr)
-    log('      to file :', filepath)
-    exiftool
-      .write(filepath, { AllDates: newDateStr })
-      .then(() => {
-        // log('exiftool status after writing :', status) // status is undefined :'(
-        // resolve('success, updated photo date to : ' + newDateStr)
-        log('      new date writen :)')
-        photosProcessed++
-        // if write successful, delete _original file backup created by exif-tool
-        unlink(filepath + '_original', (err) => {
-          if (err) {
-            error(err)
-          }
+    log.info({ prefix, message: 'writing new date : ' + newDateStr })
+    log.info({ prefix, message: 'to file : ' + filepath })
+      exiftool
+        .write(filepath, { AllDates: newDateStr })
+        .then(() => {
+          // log.info('exiftool status after writing :', status) // status is undefined :'(
+          // resolve('success, updated photo date to : ' + newDateStr)
+          log.success({ prefix, message: 'new date writen :)' })
+          photosProcessed++
+          // if write successful, delete _original file backup created by exif-tool
+          unlink(filepath + '_original', (err) => {
+            if (err) {
+              log.error(err)
+            }
+          })
+          // because above unlink is async, let it work on is own and resolve now
+          resolve('success, updated photo date')
         })
-        // because above unlink is async, let it work on is own and resolve now
-        resolve('success, updated photo date')
-      })
-      .catch(err => {
-        error(err)
-        reject('failed at writing date exif')
-      })
+        .catch(err => {
+          log.error(err)
+          reject('failed at writing date exif')
+        })
   })
 }
 
-function exif(photo: string, dir: DirInfos, needConfirm?: boolean) {
+function exif(prefix: string, photo: string, dir: DirInfos, needConfirm?: boolean) {
   return new Promise((resolve, reject) => {
     if (!dir.year && !dir.month) {
       return resolve('cannot fix exif without year and month')
     }
     const filepath = getFinalPhotoName(photo)
     exiftool.read(filepath)
-      .then((tags: ExifTool.Tags) => getDateFromTags(tags))
+      .then((tags: ExifTool.Tags) => getDateFromTags(prefix, tags))
       .then(originalDate => {
-        log('      original date found :', originalDate)
-        const newDate = new Date(originalDate)
+        let newDate = new Date()
         const year = newDate.getFullYear()
         const month = newDate.getMonth() + 1
         let doRewrite = false
-        if (year !== dir.year) {
-          warnIndent('fixing photo year "' + year + '" => "' + dir.year + '"')
+        if (originalDate) {
+          log.info({ prefix, message: 'original date found : ' + originalDate })
+          newDate = new Date(originalDate)
+          if (year !== dir.year) {
+            log.warn({ prefix, message: 'fixing photo year "' + year + '" => "' + dir.year + '"' })
+            newDate.setFullYear(dir.year)
+            doRewrite = true
+          }
+          if (month !== dir.month) {
+            log.warn({ prefix, message: 'fixing photo month "' + month + '" => "' + dir.month + '"' })
+            newDate.setMonth(dir.month - 1)
+            doRewrite = true
+          }
+        } else {
+          doRewrite = true
           newDate.setFullYear(dir.year)
-          doRewrite = true
-        }
-        if (month !== dir.month) {
-          warnIndent('fixing photo month "' + month + '" => "' + dir.month + '"')
           newDate.setMonth(dir.month - 1)
-          doRewrite = true
         }
         if (doRewrite) {
           const newDateStr = dateToIsoString(newDate)
-          const originalDateStr = dateToIsoString(originalDate)
-          log('      should rewrite exif with this date : ' + newDateStr + ', instead of : ' + originalDateStr)
+          log.info({ prefix, message: 'new date will be ' + newDateStr})
+          if (originalDate) {
+            log.info({ prefix, message: 'instead of ' + dateToIsoString(originalDate)})
+          }
           if (needConfirm) {
             inquirer.prompt([{
               default: true, message: 'Ok for this ?', name: 'rewrite', type: 'confirm',
             }]).then(answers => {
               if (answers.rewrite) {
-                log('      user validated rewrite')
-                writeExifDate(filepath, newDateStr).then(r => resolve(r)).catch(r => reject(r))
+                log.success({ prefix, message: 'user validated rewrite'})
+                writeExifDate(prefix, filepath, newDateStr).then(r => resolve(r)).catch(r => reject(r))
               } else {
                 reject('user abort date rewrite')
               }
             })
           } else {
-            writeExifDate(filepath, newDateStr).then(r => resolve(r)).catch(r => reject(r))
+            writeExifDate(prefix, filepath, newDateStr).then(r => resolve(r)).catch(r => reject(r))
           }
         } else {
           resolve('success, date is good')
         }
       })
       .catch(err => {
-        error(err)
+        log.error(err)
         reject('failed at reading exif')
       })
   })
@@ -255,29 +251,29 @@ function exif(photo: string, dir: DirInfos, needConfirm?: boolean) {
 
 async function checkPhotos(photos: PhotoSet, dir: DirInfos) {
   const count = photos.length
-  log('found', count, 'photos in dir "' + dir.name + '"')
+  log.info('found', count, 'photos in dir "' + dir.name + '"')
   let needConfirm = false // TODO : put this back to true
-  // log(photos)
+  // log.info(photos)
   for (let i = 0; i < count; i++) {
     const photo = photos[i]
     let name = basename(photo)
     if (name.length > 20) {
       name = name.substr(0, 20) + '...'
     }
-    const num = i + 1
-    const indent = '  ' + num + ' :'
-    await log('processing photo', num, '(' + name + ')')
-      .then(() => compress(photo))
-      .then(status => log(indent, status))
-      .then(() => exif(photo, dir, needConfirm))
-      .then(status => {
+    const num = i + 1 + ''
+    const prefix = '[photo ' + num + ']'
+     log.info('processing photo', num, '(' + name + ')')
+     await  compress(prefix, photo)
+      .then(() => exif(prefix, photo, dir, needConfirm))
+      .then(message => {
         if (needConfirm && status.includes('updated')) {
-          log(indent, 'user validated once, turning off validation for this folder...')
+          log.success({ prefix, message: 'user validated once, turning off validation for this folder...' })
           needConfirm = false
         }
-        return log(indent, status)
+        log.info({ prefix, message })
+        return true
       })
-      .catch(err => error(err))
+      .catch(err => log.error(err))
   }
   return Promise.resolve('check photos done in dir "' + dir.name + '"')
 
@@ -290,27 +286,29 @@ function checkNextDir() {
   // extract first
   const dir = dirs.shift() // full path
   const dirName = basename(dir) // directory/folder name
-  log('reading dir "' + dirName + '"')
+  log.info('reading dir "' + dirName + '"')
   const dateMatches = dirName.match(/(\d{4})\-(\d{2})/)
   let year = null
   let month = null
   if (!dateMatches || !dateMatches.length || dateMatches.length !== 3) {
-    warn('failed at detecting year & month')
+    log.warn('failed at detecting year & month')
   } else {
     year = parseInt(dateMatches[1], 10)
     month = parseInt(dateMatches[2], 10)
-    log('detected year "' + year + '" and month "' + month + '"')
+    log.success('detected year "' + year + '" and month "' + month + '"')
   }
   const oDir: DirInfos = { name: dirName, year, month }
   const include = join(dir, '**/*.(jpg|jpeg)')
   const exclude = '!' + join(dir, '**/*' + config.suffix + '.(jpg|jpeg)')
   const rules = [include, exclude]
-  // log('search files with rules', rules)
+  // log.info('search files with rules', rules)
   return globby(rules, { nocase: true })
     .then((photos: PhotoSet) => checkPhotos(photos, oDir))
-    .then(status => log(status))
-    .then(() => checkNextDir())
-    .catch(err => error(err))
+    .then(status => {
+      log.info(status)
+      return checkNextDir()
+    })
+    .catch(err => log.error(err))
 }
 
 function showMetrics() {
@@ -320,31 +318,35 @@ function showMetrics() {
     timeReadable = Math.round(timeElapsed / 60 * 10) / 10 + ' minutes'
   }
   const averageTimePerPhoto = (Math.round(timeElapsed / photosProcessed * 100) / 100) || 0
-  log(`processed ${photosProcessed} photos in ${timeReadable}`)
-  if (timeElapsed) {
-    log(`with an average of ${averageTimePerPhoto} seconds per photo`)
+  if (photosProcessed > 0) {
+    log.info(`processed ${photosProcessed} photos in ${timeReadable}`)
+    if (timeElapsed && isFinite(averageTimePerPhoto)) {
+      log.info(`with an average of ${averageTimePerPhoto} seconds per photo`)
+    }
+  } else {
+    log.info('no photos processed')
   }
 }
 
 function killExifTool() {
-  log('killing exif tool instance...')
+  log.info('killing exif tool instance...')
   exiftool.end()
   return Promise.resolve('success, does not wait for exif-tool killing')
 }
 
 function start() {
-  log('Photo Archiver is starting...')
+  log.start('Photo Archiver')
   inquirer.prompt(questions).then(answers => {
     config = { ...config, ...answers }
     startTime = getTimestamp()
-    log('start with config :', config)
-      .then(() => getDirs())
+    getDirs()
       .then(() => checkNextDir())
-      .then(status => log(status))
-      .catch((err) => error(err))
+      .then(status => log.info(status))
+      .catch((err) => log.error(err))
       .then(() => showMetrics())
       .then(() => killExifTool())
-      .catch((err) => error(err))
+      .catch((err) => log.error(err))
+      .then(() => log.complete('Photo Archiver'))
   })
 }
 
