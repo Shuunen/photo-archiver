@@ -30,7 +30,7 @@ const questions = [
   },
   {
     default: config.overwrite,
-    message: 'Overwrite photos when compressing ?',
+    message: 'Overwrite photos ?',
     name: 'overwrite',
     type: 'confirm',
   },
@@ -102,7 +102,7 @@ function compress(photo) {
     // log('compressing "' + photo + '"')
     const photoIn = photo
     const photoOut = getFinalPhotoName(photo)
-    const command = `jpeg-recompress --method smallfry "${photoIn}" "${photoOut}"`
+    const command = `bin/jpeg-recompress --method smallfry "${photoIn}" "${photoOut}"`
     // log('executing command :', command)
     exec(command, (err, stdout, stderr) => {
       if (err) {
