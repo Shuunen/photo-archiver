@@ -22,6 +22,10 @@
     "typescript": "^2.8.3"
   },
   "devDependencies": {
+    "@types/figures": "^2.0.0",
+    "@types/globby": "^6.1.0",
+    "@types/inquirer": "^0.0.41",
+    "@types/minimist": "^1.2.0",
     "@types/node": "^10.0.6",
     "nodemon": "^1.17.4",
     "ts-node": "^6.0.3",
