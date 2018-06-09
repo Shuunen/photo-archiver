@@ -11,6 +11,7 @@ import { basename, join, resolve as pathResolve } from 'path'
 import * as log from 'signale'
 
 const exiftool = new ExifTool.ExifTool()
+const exiftoolExe = pathResolve('node_modules/exiftool-vendored.exe/bin/exiftool')
 const argv = minimist(process.argv.slice(2))
 const currentPath = process.cwd()
 const dirs = []
@@ -188,7 +189,37 @@ function writeExifDate(prefix, filepath, newDateStr) {
   })
 }
 
-function exif(prefix: string, photo: string, dir: DirInfos, needConfirm?: boolean) {
+function repairExif(prefix: string, filepath: string) {
+  return new Promise((resolve, reject) => {
+    let message = ''
+    if (process.platform === 'win32') {
+      const command = exiftoolExe + ` -all= -tagsfromfile @ -all:all -unsafe -icc_profile "${filepath}"`
+      // log.info('executing command :', command)
+      exec(command, (err, stdout, stderr) => {
+        if (err) {
+          // node couldn't execute the command
+          reject(err)
+        } else {
+          // if repair successful, delete _original file backup created by exif-tool
+          unlink(filepath + '_original', (error) => {
+            if (error) {
+              log.error(error)
+            }
+          })
+          message = 'success, all tags fixed !'
+          log.success({ prefix, message })
+          resolve(message)
+        }
+      })
+    } else {
+      message = 'non-windows systems are not yet ready to repair exif'
+      log.info({ prefix, message })
+      resolve('success, ' + message)
+    }
+  })
+}
+
+function fixExif(prefix: string, photo: string, dir: DirInfos, needConfirm?: boolean) {
   return new Promise((resolve, reject) => {
     if (!dir.year && !dir.month) {
       return resolve('cannot fix exif without year and month')
@@ -266,7 +297,8 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos) {
     const prefix = '[photo ' + num + ']'
      log.info('processing photo', num, '(' + name + ')')
      await  compress(prefix, photo)
-      .then(() => exif(prefix, photo, dir, needConfirm))
+      .then(() => repairExif(prefix, photo))
+      .then(() => fixExif(prefix, photo, dir, needConfirm))
       .then(message => {
         if (needConfirm && status.includes('updated')) {
           log.success({ prefix, message: 'user validated once, turning off validation for this folder...' })
@@ -337,7 +369,7 @@ function killExifTool() {
 }
 
 function start() {
-  log.start('Photo Archiver')
+  log.start('Photo Archiver (' + process.platform + ')')
   inquirer.prompt(questions).then(answers => {
     config = { ...config, ...answers }
     startTime = getTimestamp()
