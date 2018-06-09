@@ -7,13 +7,14 @@ import { readdirSync, statSync, unlink } from 'fs'
 import * as globby from 'globby'
 import * as inquirer from 'inquirer'
 import * as minimist from 'minimist'
-import { basename, join } from 'path'
+import { basename, join, resolve as pathResolve } from 'path'
 import * as log from 'signale'
 
 const exiftool = new ExifTool.ExifTool()
 const argv = minimist(process.argv.slice(2))
 const currentPath = process.cwd()
 const dirs = []
+const jpegRecompress = pathResolve('bin/jpeg-recompress')
 let startTime = null
 let config = {
   basepath: argv.path || currentPath + '/test',
@@ -86,7 +87,7 @@ function compress(prefix, photo) {
     // log.info('compressing "' + photo + '"')
     const photoIn = photo
     const photoOut = getFinalPhotoName(photo)
-    const command = `bin/jpeg-recompress --method smallfry "${photoIn}" "${photoOut}"`
+    const command = jpegRecompress + ` --method smallfry "${photoIn}" "${photoOut}"`
     // log.info('executing command :', command)
     exec(command, (err, stdout, stderr) => {
       if (err) {
@@ -228,7 +229,8 @@ function exif(prefix: string, photo: string, dir: DirInfos, needConfirm?: boolea
             inquirer.prompt([{
               default: true, message: 'Ok for this ?', name: 'rewrite', type: 'confirm',
             }]).then(answers => {
-              if (answers.rewrite) {
+              // tslint:disable-next-line:no-any
+              if ((answers as any).rewrite) {
                 log.success({ prefix, message: 'user validated rewrite'})
                 writeExifDate(prefix, filepath, newDateStr).then(r => resolve(r)).catch(r => reject(r))
               } else {
