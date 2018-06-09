@@ -228,13 +228,12 @@ function fixExif(prefix: string, photo: string, dir: DirInfos, needConfirm?: boo
     exiftool.read(filepath)
       .then((tags: ExifTool.Tags) => getDateFromTags(prefix, tags))
       .then(originalDate => {
-        let newDate = new Date()
+        const newDate = new Date(originalDate)
         const year = newDate.getFullYear()
         const month = newDate.getMonth() + 1
         let doRewrite = false
         if (originalDate) {
-          log.info({ prefix, message: 'original date found : ' + originalDate })
-          newDate = new Date(originalDate)
+          log.info({ prefix, message: 'original date found : ' + dateToIsoString(originalDate).split('T')[0] })
           if (year !== dir.year) {
             log.warn({ prefix, message: 'fixing photo year "' + year + '" => "' + dir.year + '"' })
             newDate.setFullYear(dir.year)
@@ -297,7 +296,13 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos) {
     const prefix = '[photo ' + num + ']'
      log.info('processing photo', num, '(' + name + ')')
      await  compress(prefix, photo)
-      .then(() => repairExif(prefix, photo))
+      .then(message => {
+        if (!message.includes('already processed')) {
+          // only repair exif of non-already processed files
+          return repairExif(prefix, photo)
+        }
+        return true
+      })
       .then(() => fixExif(prefix, photo, dir, needConfirm))
       .then(message => {
         if (needConfirm && status.includes('updated')) {
