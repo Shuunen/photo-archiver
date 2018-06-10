@@ -76,19 +76,19 @@ function getFinalPhotoName(photo) {
   return config.overwrite ? photo : photo.replace(/(\.j)/i, config.suffix + '$1')
 }
 
-function compress(prefix, photo) {
+function compress(prefix, photo, method = 'ssim') {
   return new Promise((resolve, reject) => {
-    let message = ''
+    let message = 'compressing via ' + method
     // photo = photo.replace(/\\/g, '/')
     if (photo.indexOf(config.suffix) !== -1) {
       message = 'success (already processed)'
       log.info({ prefix, message })
       return resolve(message)
     }
-    // log.info('compressing "' + photo + '"')
+    log.info({ prefix, message })
     const photoIn = photo
     const photoOut = getFinalPhotoName(photo)
-    const command = jpegRecompress + ` --method smallfry "${photoIn}" "${photoOut}"`
+    const command = jpegRecompress + ` --method ${method} "${photoIn}" "${photoOut}"`
     // log.info('executing command :', command)
     exec(command, (err, stdout, stderr) => {
       if (err) {
@@ -295,7 +295,16 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos) {
     const num = i + 1 + ''
     const prefix = '[photo ' + num + ']'
      log.info('processing photo', num, '(' + name + ')')
-     await  compress(prefix, photo)
+     await  compress(prefix, photo, 'smallfry')
+       .catch(error => {
+         if (error.message.includes('Command failed')) {
+           // sometimes smallfry fail where ssim works
+           log.warn({ prefix, message: 'smallfry compression failed, trying ssim...' })
+           return compress(prefix, photo, 'ssim')
+         } else {
+           throw error
+         }
+       })
       .then(message => {
         if (!message.includes('already processed')) {
           // only repair exif of non-already processed files
