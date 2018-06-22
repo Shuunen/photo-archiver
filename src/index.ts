@@ -103,7 +103,7 @@ function compress(prefix, photo, method = 'ssim') {
           log.info({ prefix, message })
         } else {
           message = 'success, compressed'
-          log.success({ prefix, message})
+          log.success({ prefix, message })
           photosProcessed++
         }
         resolve(message)
@@ -158,7 +158,7 @@ function getDateFromTags(prefix, tags): Date {
     return new Date(date.year + '-' + month + '-' + day + 'T' + hour + ':' + minute)
   }
 
-  log.warn({prefix, message: 'failed at finding original date'})
+  log.warn({ prefix, message: 'failed at finding original date' })
   return null
 }
 
@@ -166,26 +166,26 @@ function writeExifDate(prefix, filepath, newDateStr) {
   return new Promise((resolve, reject) => {
     log.info({ prefix, message: 'writing new date : ' + newDateStr })
     log.info({ prefix, message: 'to file : ' + filepath })
-      exiftool
-        .write(filepath, { AllDates: newDateStr })
-        .then(() => {
-          // log.info('exiftool status after writing :', status) // status is undefined :'(
-          // resolve('success, updated photo date to : ' + newDateStr)
-          log.success({ prefix, message: 'new date writen :)' })
-          photosProcessed++
-          // if write successful, delete _original file backup created by exif-tool
-          unlink(filepath + '_original', (err) => {
-            if (err) {
-              log.error(err)
-            }
-          })
-          // because above unlink is async, let it work on is own and resolve now
-          resolve('success, updated photo date')
+    exiftool
+      .write(filepath, { AllDates: newDateStr })
+      .then(() => {
+        // log.info('exiftool status after writing :', status) // status is undefined :'(
+        // resolve('success, updated photo date to : ' + newDateStr)
+        log.success({ prefix, message: 'new date writen :)' })
+        photosProcessed++
+        // if write successful, delete _original file backup created by exif-tool
+        unlink(filepath + '_original', (err) => {
+          if (err) {
+            log.error(err)
+          }
         })
-        .catch(err => {
-          log.error(err)
-          reject('failed at writing date exif')
-        })
+        // because above unlink is async, let it work on is own and resolve now
+        resolve('success, updated photo date')
+      })
+      .catch(err => {
+        log.error(err)
+        reject('failed at writing date exif')
+      })
   })
 }
 
@@ -234,26 +234,30 @@ function fixExif(prefix: string, photo: string, dir: DirInfos, needConfirm?: boo
         let doRewrite = false
         if (originalDate) {
           log.info({ prefix, message: 'original date found : ' + dateToIsoString(originalDate).split('T')[0] })
-          if (year !== dir.year) {
+          if (dir.year !== null && year !== dir.year) {
             log.warn({ prefix, message: 'fixing photo year "' + year + '" => "' + dir.year + '"' })
             newDate.setFullYear(dir.year)
             doRewrite = true
           }
-          if (month !== dir.month) {
+          if (dir.month !== null && month !== dir.month) {
             log.warn({ prefix, message: 'fixing photo month "' + month + '" => "' + dir.month + '"' })
             newDate.setMonth(dir.month - 1)
             doRewrite = true
           }
         } else {
           doRewrite = true
-          newDate.setFullYear(dir.year)
-          newDate.setMonth(dir.month - 1)
+          if (dir.year !== null) {
+            newDate.setFullYear(dir.year)
+          }
+          if (dir.month !== null) {
+            newDate.setMonth(dir.month - 1)
+          }
         }
         if (doRewrite) {
           const newDateStr = dateToIsoString(newDate)
-          log.info({ prefix, message: 'new date will be ' + newDateStr})
+          log.info({ prefix, message: 'new date will be ' + newDateStr })
           if (originalDate) {
-            log.info({ prefix, message: 'instead of ' + dateToIsoString(originalDate)})
+            log.info({ prefix, message: 'instead of ' + dateToIsoString(originalDate) })
           }
           if (needConfirm) {
             inquirer.prompt([{
@@ -261,7 +265,7 @@ function fixExif(prefix: string, photo: string, dir: DirInfos, needConfirm?: boo
             }]).then(answers => {
               // tslint:disable-next-line:no-any
               if ((answers as any).rewrite) {
-                log.success({ prefix, message: 'user validated rewrite'})
+                log.success({ prefix, message: 'user validated rewrite' })
                 writeExifDate(prefix, filepath, newDateStr).then(r => resolve(r)).catch(r => reject(r))
               } else {
                 reject('user abort date rewrite')
@@ -294,17 +298,17 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos) {
     }
     const num = i + 1 + ''
     const prefix = '[photo ' + num + ']'
-     log.info('processing photo', num, '(' + name + ')')
-     await  compress(prefix, photo, 'smallfry')
-       .catch(error => {
-         if (error.message.includes('Command failed')) {
-           // sometimes smallfry fail where ssim works
-           log.warn({ prefix, message: 'smallfry compression failed, trying ssim...' })
-           return compress(prefix, photo, 'ssim')
-         } else {
-           throw error
-         }
-       })
+    log.info('processing photo', num, '(' + name + ')')
+    await compress(prefix, photo, 'smallfry')
+      .catch(error => {
+        if (error.message.includes('Command failed')) {
+          // sometimes smallfry fail where ssim works
+          log.warn({ prefix, message: 'smallfry compression failed, trying ssim...' })
+          return compress(prefix, photo, 'ssim')
+        } else {
+          throw error
+        }
+      })
       .then(message => {
         if (!message.includes('already processed')) {
           // only repair exif of non-already processed files
@@ -343,7 +347,12 @@ function checkNextDir() {
   } else {
     year = parseInt(dateMatches[1], 10)
     month = parseInt(dateMatches[2], 10)
-    log.success('detected year "' + year + '" and month "' + month + '"')
+    log.success('detected year "' + year + '"')
+    if (month !== 0) {
+      log.success('detected month "' + month + '"')
+    } else {
+      month = null
+    }
   }
   const oDir: DirInfos = { name: dirName, year, month }
   const include = join(dir, '**/*.(jpg|jpeg)')
