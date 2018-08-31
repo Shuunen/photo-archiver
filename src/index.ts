@@ -1,8 +1,6 @@
 // tslint:disable:max-file-line-count
-import chalk from 'chalk'
 import { exec } from 'child_process'
 import * as ExifTool from 'exiftool-vendored'
-import * as figures from 'figures'
 import { readdirSync, statSync, unlink } from 'fs'
 import * as globby from 'globby'
 import * as inquirer from 'inquirer'
@@ -19,11 +17,12 @@ const jpegRecompress = pathResolve('bin/jpeg-recompress')
 let startTime = null
 let config = {
   basepath: argv.path || currentPath + '/test',
+  forceSsim: false,
   overwrite: true, // true : will replace original photos / false : will use below suffix and create new files
   suffix: '-archived', // my-photo.jpg => my-photo-archived.jpg
 }
-declare const Promise
-let photosProcessed = 0
+let photosCompressed = 0
+let photosDateFixed = 0
 const questions = [
   {
     default: config.basepath,
@@ -76,9 +75,13 @@ function getFinalPhotoName(photo) {
   return config.overwrite ? photo : photo.replace(/(\.j)/i, config.suffix + '$1')
 }
 
-function compress(prefix, photo, method = 'ssim') {
+function compress(prefix, photo, method = 'ssim'): Promise<string> {
   return new Promise((resolve, reject) => {
-    let message = 'compressing via ' + method
+    let methodToUse = method
+    if (config.forceSsim) {
+      methodToUse = 'ssim'
+    }
+    let message = 'compressing via ' + methodToUse
     // photo = photo.replace(/\\/g, '/')
     if (photo.indexOf(config.suffix) !== -1) {
       message = 'success (already processed)'
@@ -88,7 +91,7 @@ function compress(prefix, photo, method = 'ssim') {
     log.info({ prefix, message })
     const photoIn = photo
     const photoOut = getFinalPhotoName(photo)
-    const command = jpegRecompress + ` --method ${method} "${photoIn}" "${photoOut}"`
+    const command = jpegRecompress + ` --method ${methodToUse} "${photoIn}" "${photoOut}"`
     // log.info('executing command :', command)
     exec(command, (err, stdout, stderr) => {
       if (err) {
@@ -104,7 +107,7 @@ function compress(prefix, photo, method = 'ssim') {
         } else {
           message = 'success, compressed'
           log.success({ prefix, message })
-          photosProcessed++
+          photosCompressed++
         }
         resolve(message)
       }
@@ -172,7 +175,7 @@ function writeExifDate(prefix, filepath, newDateStr) {
         // log.info('exiftool status after writing :', status) // status is undefined :'(
         // resolve('success, updated photo date to : ' + newDateStr)
         log.success({ prefix, message: 'new date writen :)' })
-        photosProcessed++
+        photosDateFixed++
         // if write successful, delete _original file backup created by exif-tool
         unlink(filepath + '_original', (err) => {
           if (err) {
@@ -237,24 +240,30 @@ function fixExif(prefix: string, photo: string, dir: DirInfos, needConfirm?: boo
           if (dir.year !== null && year !== dir.year) {
             log.warn({ prefix, message: 'fixing photo year "' + year + '" => "' + dir.year + '"' })
             newDate.setFullYear(dir.year)
+            newDate.setFullYear(dir.year) // this is intended, see bug 1 at the bottom of this file
             doRewrite = true
           }
           if (dir.month !== null && month !== dir.month) {
             log.warn({ prefix, message: 'fixing photo month "' + month + '" => "' + dir.month + '"' })
             newDate.setMonth(dir.month - 1)
+            newDate.setMonth(dir.month - 1) // this is intended, see bug 1 at the bottom of this file
             doRewrite = true
           }
         } else {
           doRewrite = true
           if (dir.year !== null) {
             newDate.setFullYear(dir.year)
+            newDate.setFullYear(dir.year) // this is intended, see bug 1 at the bottom of this file
           }
           if (dir.month !== null) {
             newDate.setMonth(dir.month - 1)
+            newDate.setMonth(dir.month - 1) // this is intended, see bug 1 at the bottom of this file
           }
         }
         if (doRewrite) {
           const newDateStr = dateToIsoString(newDate)
+          // log.warn({ prefix, message: 'USING static date for testing purpose' })
+          // const newDateStr = '2016-02-06T16:56:00'
           log.info({ prefix, message: 'new date will be ' + newDateStr })
           if (originalDate) {
             log.info({ prefix, message: 'instead of ' + dateToIsoString(originalDate) })
@@ -374,14 +383,16 @@ function showMetrics() {
   if (timeElapsed > 120) {
     timeReadable = Math.round(timeElapsed / 60 * 10) / 10 + ' minutes'
   }
-  const averageTimePerPhoto = (Math.round(timeElapsed / photosProcessed * 100) / 100) || 0
-  if (photosProcessed > 0) {
-    log.info(`processed ${photosProcessed} photos in ${timeReadable}`)
-    if (timeElapsed && isFinite(averageTimePerPhoto)) {
-      log.info(`with an average of ${averageTimePerPhoto} seconds per photo`)
+  const operations = photosCompressed + photosDateFixed
+  const averageTimePerOperation = (Math.round(timeElapsed / operations * 100) / 100) || 0
+  if (operations > 0) {
+    log.info(`compressed ${photosCompressed} photos`)
+    log.info(`date fixed ${photosDateFixed} photos`)
+    if (timeElapsed && isFinite(averageTimePerOperation)) {
+      log.info(`with an average of ${averageTimePerOperation} seconds per operation`)
     }
   } else {
-    log.info('no photos processed')
+    log.info('no photos compressed or date fixed')
   }
 }
 
@@ -417,3 +428,10 @@ interface DirInfos {
   year: number
   month: number
 }
+
+// Bug 1
+/*
+date = new Date('2018-08-31') // Fri Aug 31 2018 02:00:00 GMT+0200
+date.setMonth(1)              // Sat Mar 03 2018 02:00:00 GMT+0100
+date.setMonth(1)              // Sat Feb 03 2018 02:00:00 GMT+0100
+*/
