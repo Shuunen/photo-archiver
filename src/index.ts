@@ -20,9 +20,12 @@ let config = {
   forceSsim: false,
   overwrite: true, // true : will replace original photos / false : will use below suffix and create new files
   suffix: '-archived', // my-photo.jpg => my-photo-archived.jpg
+  trySsim: false,
 }
 let photosCompressed = 0
+let photosCompressSkipped = 0
 let photosDateFixed = 0
+let photosDateFixSkipped = 0
 const questions = [
   {
     default: config.basepath,
@@ -291,6 +294,7 @@ function fixExif(prefix: string, photo: string, dir: DirInfos, needConfirm?: boo
               .catch(r => reject(r.toString()))
           }
         } else {
+          photosDateFixSkipped++
           resolve('success, date is good')
         }
       })
@@ -326,17 +330,19 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos) {
         }
       })
       .then(message => {
-        if (message.includes('would be larger')) {
+        if (config.trySsim && message.includes('would be larger')) {
           // if smallfry detected that output file would be larger than input
-          // log.info({ prefix, message: 'smallfry compression avoided, trying ssim...' })
+          log.info({ prefix, message: 'smallfry compression avoided, trying ssim...' })
           return compress(prefix, photo, 'ssim')
         }
         return message
       })
       .then(message => {
-        if (!message.includes('already processed')) {
+        if (!message.includes('already processed') && !message.includes('aborted')) {
           // repair exif of non-already processed files
           return repairExif(prefix, photo)
+        } else {
+          photosCompressSkipped++
         }
         return message
       })
@@ -406,11 +412,13 @@ function showMetrics() {
   if (timeElapsed > 120) {
     timeReadable = Math.round(timeElapsed / 60 * 10) / 10 + ' minutes'
   }
-  const operations = photosCompressed + photosDateFixed
+  const operations = photosCompressed + photosCompressSkipped + photosDateFixed + photosDateFixSkipped
   const averageTimePerOperation = (Math.round(timeElapsed / operations * 100) / 100) || 0
   if (operations > 0) {
     log.info(`compressed ${photosCompressed} photos`)
+    log.info(`skip compress ${photosCompressSkipped} photos`)
     log.info(`date fixed ${photosDateFixed} photos`)
+    log.info(`skip date fix ${photosDateFixSkipped} photos`)
     if (timeElapsed && isFinite(averageTimePerOperation)) {
       log.info(`with an average of ${averageTimePerOperation} seconds per operation`)
     }
