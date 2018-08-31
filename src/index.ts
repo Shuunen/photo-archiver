@@ -8,7 +8,7 @@ import * as minimist from 'minimist'
 import { basename, join, resolve as pathResolve } from 'path'
 import * as log from 'signale'
 
-const exiftool = new ExifTool.ExifTool()
+const exiftool = new ExifTool.ExifTool({ minorErrorsRegExp: /error|warning/i }) // show all errors
 const exiftoolExe = pathResolve('node_modules/exiftool-vendored.exe/bin/exiftool')
 const argv = minimist(process.argv.slice(2))
 const currentPath = process.cwd()
@@ -195,7 +195,7 @@ function writeExifDate(prefix, filepath, newDateStr) {
   })
 }
 
-function repairExif(prefix: string, filepath: string) {
+function repairExif(prefix: string, filepath: string): Promise<string> {
   return new Promise((resolve, reject) => {
     let message = ''
     if (process.platform === 'win32') {
@@ -225,7 +225,7 @@ function repairExif(prefix: string, filepath: string) {
   })
 }
 
-function fixExif(prefix: string, photo: string, dir: DirInfos, needConfirm?: boolean) {
+function fixExif(prefix: string, photo: string, dir: DirInfos, needConfirm?: boolean): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!dir.year && !dir.month) {
       return resolve('cannot fix exif without year and month')
@@ -278,13 +278,17 @@ function fixExif(prefix: string, photo: string, dir: DirInfos, needConfirm?: boo
               // tslint:disable-next-line:no-any
               if ((answers as any).rewrite) {
                 log.success({ prefix, message: 'user validated rewrite' })
-                writeExifDate(prefix, filepath, newDateStr).then(r => resolve(r)).catch(r => reject(r))
+                writeExifDate(prefix, filepath, newDateStr)
+                  .then(r => resolve(r.toString()))
+                  .catch(r => reject(r.toString()))
               } else {
                 reject('user abort date rewrite')
               }
             })
           } else {
-            writeExifDate(prefix, filepath, newDateStr).then(r => resolve(r)).catch(r => reject(r))
+            writeExifDate(prefix, filepath, newDateStr)
+              .then(r => resolve(r.toString()))
+              .catch(r => reject(r.toString()))
           }
         } else {
           resolve('success, date is good')
@@ -324,19 +328,27 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos) {
       .then(message => {
         if (message.includes('would be larger')) {
           // if smallfry detected that output file would be larger than input
-          log.info({ prefix, message: 'smallfry compression avoided, trying ssim...' })
+          // log.info({ prefix, message: 'smallfry compression avoided, trying ssim...' })
           return compress(prefix, photo, 'ssim')
         }
         return message
       })
       .then(message => {
         if (!message.includes('already processed')) {
-          // only repair exif of non-already processed files
+          // repair exif of non-already processed files
           return repairExif(prefix, photo)
         }
-        return true
+        return message
       })
       .then(() => fixExif(prefix, photo, dir, needConfirm))
+      .catch(message => {
+        if (message.includes('failed at writing date exif')) {
+          // repair exif of failed date fix files
+          log.info({ prefix, message: 'exif fix failed, repairing exif & try again' })
+          return repairExif(prefix, photo).then(() => fixExif(prefix, photo, dir, needConfirm))
+        }
+        return message
+      })
       .then(message => {
         if (needConfirm && status.includes('updated')) {
           log.success({ prefix, message: 'user validated once, turning off validation for this folder...' })
