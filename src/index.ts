@@ -415,12 +415,13 @@ function showMetrics() {
   const operations = photosCompressed + photosCompressSkipped + photosDateFixed + photosDateFixSkipped
   const averageTimePerOperation = (Math.round(timeElapsed / operations * 100) / 100) || 0
   if (operations > 0) {
-    log.info(`compressed ${photosCompressed} photos`)
-    log.info(`skip compress ${photosCompressSkipped} photos`)
-    log.info(`date fixed ${photosDateFixed} photos`)
-    log.info(`skip date fix ${photosDateFixSkipped} photos`)
+    log.info('Number of photos :')
+    log.info(`- compressed    : ${photosCompressed}`)
+    log.info(`- skip compress : ${photosCompressSkipped}`)
+    log.info(`- date fixed    : ${photosDateFixed}`)
+    log.info(`- skip date fix : ${photosDateFixSkipped}`)
     if (timeElapsed && isFinite(averageTimePerOperation)) {
-      log.info(`with an average of ${averageTimePerOperation} seconds per operation`)
+      log.info(`average of ${averageTimePerOperation} seconds per operation`)
     }
   } else {
     log.info('no photos compressed or date fixed')
