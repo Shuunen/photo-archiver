@@ -16,11 +16,13 @@ const dirs = []
 const jpegRecompress = pathResolve('bin/jpeg-recompress')
 let startTime = null
 let config = {
+  avoidCompress: false,
   basepath: argv.path || currentPath + '/test',
   forceSsim: false,
   overwrite: true, // true : will replace original photos / false : will use below suffix and create new files
   suffix: '-archived', // my-photo.jpg => my-photo-archived.jpg
   trySsim: false,
+  verbose: false,
 }
 let photosCompressed = 0
 let photosCompressSkipped = 0
@@ -56,8 +58,10 @@ function getDirs() {
     getDirectories(config.basepath).map((dir) => {
       // dir will be succesivly 2013, 2014,...
       const subDir = join(config.basepath, dir)
-      log.info('dir', dir)
-      log.info('subDir', subDir)
+      if (config.verbose) {
+        log.info('dir', dir)
+        log.info('subDir', subDir)
+      }
       if (dir.length === 4) {
         // like a year 2018 that contains subfolders
         getDirectories(subDir).forEach((sub) => dirs.push(join(subDir, sub)))
@@ -69,7 +73,9 @@ function getDirs() {
     if (!dirs.length) {
       dirs.push(config.basepath)
     }
-    log.info('found dir(s)', dirs)
+    if (config.verbose) {
+      log.info('found dir(s)', dirs)
+    }
     resolve('success')
   })
 }
@@ -80,6 +86,9 @@ function getFinalPhotoName(photo) {
 
 function compress(prefix, photo, method = 'ssim'): Promise<string> {
   return new Promise((resolve, reject) => {
+    if (config.avoidCompress) {
+      return resolve('avoiding compression (config)')
+    }
     let methodToUse = method
     if (config.forceSsim) {
       methodToUse = 'ssim'
@@ -91,7 +100,9 @@ function compress(prefix, photo, method = 'ssim'): Promise<string> {
       log.info({ prefix, message })
       return resolve(message)
     }
-    log.info({ prefix, message })
+    if (config.verbose) {
+      log.info({ prefix, message })
+    }
     const photoIn = photo
     const photoOut = getFinalPhotoName(photo)
     const command = jpegRecompress + ` --method ${methodToUse} "${photoIn}" "${photoOut}"`
@@ -106,13 +117,21 @@ function compress(prefix, photo, method = 'ssim'): Promise<string> {
         // log.info({ prefix, message : `stderr: ${stderr}`})
         if (stderr.toString().indexOf('already processed') !== -1) {
           message = 'success (already processed)'
-          log.info({ prefix, message })
+          if (config.verbose) {
+            log.info({ prefix, message })
+          }
         } else if (stderr.toString().indexOf('would be larger') !== -1) {
           message = 'aborted (output file would be larger than input)'
-          log.info({ prefix, message })
+          if (config.verbose) {
+            log.info({ prefix, message })
+          }
         } else {
           message = 'success, compressed'
-          log.success({ prefix, message })
+          if (config.verbose) {
+            log.success({ prefix, message })
+          } else {
+            log.success({ prefix, message: message + '"' + photo + '"' })
+          }
           photosCompressed++
         }
         resolve(message)
@@ -242,7 +261,9 @@ function fixExif(prefix: string, photo: string, dir: DirInfos, needConfirm?: boo
         const month = newDate.getMonth() + 1
         let doRewrite = false
         if (originalDate) {
-          log.info({ prefix, message: 'original date found : ' + dateToIsoString(originalDate).split('T')[0] })
+          if (config.verbose) {
+            log.info({ prefix, message: 'original date found : ' + dateToIsoString(originalDate).split('T')[0] })
+          }
           if (dir.year !== null && year !== dir.year) {
             log.warn({ prefix, message: 'fixing photo year "' + year + '" => "' + dir.year + '"' })
             newDate.setFullYear(dir.year)
@@ -307,7 +328,9 @@ function fixExif(prefix: string, photo: string, dir: DirInfos, needConfirm?: boo
 
 async function checkPhotos(photos: PhotoSet, dir: DirInfos) {
   const count = photos.length
-  log.info('found', count, 'photos in dir "' + dir.name + '"')
+  if (config.verbose) {
+    log.info('found', count, 'photos in dir "' + dir.name + '"')
+  }
   let needConfirm = false // TODO : put this back to true
   // log.info(photos)
   for (let i = 0; i < count; i++) {
@@ -318,7 +341,9 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos) {
     }
     const num = i + 1 + ''
     const prefix = '[photo ' + num + ']'
-    log.info('processing photo', num, '(' + name + ')')
+    if (config.verbose) {
+      log.info('processing photo', num, '(' + name + ')')
+    }
     await compress(prefix, photo, 'smallfry')
       .catch(error => {
         if (error.message.includes('Command failed')) {
@@ -338,8 +363,11 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos) {
         return message
       })
       .then(message => {
-        if (!message.includes('already processed') && !message.includes('aborted')) {
-          // repair exif of non-already processed files
+        const notAlreadyProcessed = !message.includes('already processed')
+        const notAborted = !message.includes('aborted')
+        const notAvoidingCompression = !message.includes('avoiding compression')
+        // avoid repairing exif for no reasons
+        if (notAlreadyProcessed && notAborted && notAvoidingCompression) {
           return repairExif(prefix, photo)
         } else {
           photosCompressSkipped++
@@ -360,7 +388,9 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos) {
           log.success({ prefix, message: 'user validated once, turning off validation for this folder...' })
           needConfirm = false
         }
-        log.info({ prefix, message })
+        if (config.verbose) {
+          log.info({ prefix, message })
+        }
         return true
       })
       .catch(err => log.error(err))
@@ -376,18 +406,28 @@ function checkNextDir() {
   // extract first
   const dir = dirs.shift() // full path
   const dirName = basename(dir) // directory/folder name
-  log.info('reading dir "' + dirName + '"')
+  if (config.verbose) {
+    log.info('reading dir "' + dirName + '"')
+  }
   const dateMatches = dirName.match(/(\d{4})\-(\d{2})/)
   let year = null
   let month = null
   if (!dateMatches || !dateMatches.length || dateMatches.length !== 3) {
-    log.warn('failed at detecting year & month')
+    if (config.verbose) {
+      log.warn('failed at detecting year & month')
+    } else {
+      log.warn('failed at detecting year & month in "' + dir + '"')
+    }
   } else {
     year = parseInt(dateMatches[1], 10)
     month = parseInt(dateMatches[2], 10)
-    log.success('detected year "' + year + '"')
+    if (config.verbose) {
+      log.info('detected year "' + year + '"')
+    }
     if (month !== 0) {
-      log.success('detected month "' + month + '"')
+      if (config.verbose) {
+        log.info('detected month "' + month + '"')
+      }
     } else {
       month = null
     }
@@ -400,7 +440,9 @@ function checkNextDir() {
   return globby(rules, { nocase: true })
     .then((photos: PhotoSet) => checkPhotos(photos, oDir))
     .then(status => {
-      log.info(status)
+      if (config.verbose) {
+        log.info(status)
+      }
       return checkNextDir()
     })
     .catch(err => log.error(err))
