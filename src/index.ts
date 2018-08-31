@@ -99,10 +99,13 @@ function compress(prefix, photo, method = 'ssim'): Promise<string> {
         reject(err)
       } else {
         // the *entire* stdout and stderr (buffered)
-        // console.log.info(`stdout: ${stdout}`);
-        // console.log.info(`stderr: ${stderr}`);
+        // log.info({ prefix, message : `stdout: ${stdout}`})
+        // log.info({ prefix, message : `stderr: ${stderr}`})
         if (stderr.toString().indexOf('already processed') !== -1) {
           message = 'success (already processed)'
+          log.info({ prefix, message })
+        } else if (stderr.toString().indexOf('would be larger') !== -1) {
+          message = 'aborted (output file would be larger than input)'
           log.info({ prefix, message })
         } else {
           message = 'success, compressed'
@@ -317,6 +320,14 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos) {
         } else {
           throw error
         }
+      })
+      .then(message => {
+        if (message.includes('would be larger')) {
+          // if smallfry detected that output file would be larger than input
+          log.info({ prefix, message: 'smallfry compression avoided, trying ssim...' })
+          return compress(prefix, photo, 'ssim')
+        }
+        return message
       })
       .then(message => {
         if (!message.includes('already processed')) {
