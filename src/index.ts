@@ -13,16 +13,18 @@ const exiftool = new ExifTool.ExifTool({ minorErrorsRegExp: /error|warning/i }) 
 const exiftoolExe = pathResolve('node_modules/exiftool-vendored.exe/bin/exiftool')
 const jpegRecompress = pathResolve('bin/jpeg-recompress')
 const currentPath = process.cwd()
-let config = minimist(process.argv.slice(2), { default: {
-  compress: true,
-  forceSsim: false,
-  marker: '-archived', // my-photo.jpg => my-photo-archived.jpg
-  overwrite: true, // true : will replace original photos / false : will use config marker and create new files
-  path: currentPath + '/test',
-  processOne: true,
-  questions: true,
-  verbose: false,
-}})
+let config: Config = minimist(process.argv.slice(2), {
+  default: {
+    compress: true,
+    forceSsim: false,
+    marker: '-archived', // my-photo.jpg => my-photo-archived.jpg
+    overwrite: true, // true : will replace original photos / false : will use config marker and create new files
+    path: currentPath + '/test',
+    processOne: false,
+    questions: true,
+    verbose: false,
+  },
+}) as Config
 const dirs = []
 let startTime = null
 const operations = {
@@ -133,7 +135,7 @@ function getFinalPhotoName(photo) {
 
 function compress(prefix, photo, method = 'ssim'): Promise<string> {
   return new Promise((resolve, reject) => {
-    if (config.compress) {
+    if (!config.compress) {
       operations.compress.skip++
       return resolve('avoiding compression (config)')
     }
@@ -244,14 +246,14 @@ function getDateFromTags(prefix, tags): Date {
 
 function writeExifDate(prefix, filepath, newDateStr) {
   return new Promise((resolve, reject) => {
-    log.info({ prefix, message: 'writing new date : ' + newDateStr })
-    log.info({ prefix, message: 'to file : ' + filepath })
+    // log.info({ prefix, message: 'writing new date : ' + newDateStr })
+    // log.info({ prefix, message: 'to file : ' + filepath })
     exiftool
       .write(filepath, { AllDates: newDateStr })
       .then(() => {
         // log.info('exiftool status after writing :', status) // status is undefined :'(
         // resolve('success, updated photo date to : ' + newDateStr)
-        log.success({ prefix, message: 'new date writen :)' })
+        // log.success({ prefix, message: 'new date writen :)' })
         operations.dateFix.success++
         // if write successful, delete _original file backup created by exif-tool
         unlink(filepath + '_original', (err) => {
@@ -357,9 +359,9 @@ function fixExifDate(prefix: string, photo: string, dir: DirInfos): Promise<stri
           const newDateStr = dateToIsoString(newDate)
           // log.warn({ prefix, message: 'USING static date for testing purpose' })
           // const newDateStr = '2016-02-06T16:56:00'
-          log.info({ prefix, message: 'new date will be ' + newDateStr })
+          log.info({ prefix, message: 'new date will be : ' + newDateStr })
           if (originalDate) {
-            log.info({ prefix, message: 'instead of ' + dateToIsoString(originalDate) })
+          log.info({ prefix, message: 'instead of       : ' + dateToIsoString(originalDate) })
           }
           writeExifDate(prefix, filepath, newDateStr)
             .then(r => resolve(r.toString()))
@@ -550,7 +552,9 @@ function showMetrics() {
 }
 
 function killExifTool() {
-  log.info('killing exif tool instance...')
+  if (config.verbose) {
+    log.info('killing exif tool instance...')
+  }
   exiftool.end()
   return Promise.resolve('success, does not wait for exif-tool killing')
 }
@@ -559,7 +563,7 @@ function startProcess() {
   startTime = getTimestampMs()
   getDirs()
     .then(() => checkNextDir())
-    .then(status => log.info(status))
+    .then(status => config.verbose ? log.info(status) : true)
     .catch((err) => log.error(err))
     .then(() => showMetrics())
     .catch((err) => log.error(err))
@@ -570,7 +574,10 @@ function startProcess() {
 
 function start() {
   log.start('Photo Archiver (' + process.platform + ')')
-  log.info(config)
+  if (config.verbose) {
+      log.info('init with config :')
+      log.info(config)
+  }
   if (config.questions) {
     inquirer.prompt(questions).then(answers => {
       config = { ...config, ...answers }
@@ -590,6 +597,17 @@ interface DirInfos {
   name: string // folder name
   year: number
   month: number
+}
+
+interface Config extends minimist.ParsedArgs {
+  compress: boolean
+  forceSsim: boolean
+  marker: string // my-photo.jpg => my-photo-archived.jpg
+  overwrite: boolean // boolean : will replace original photos / boolean : will use config marker and create new files
+  path: string
+  processOne: boolean
+  questions: boolean
+  verbose: boolean
 }
 
 // Bug 1

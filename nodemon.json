@@ -1,5 +1,5 @@
 {
   "watch": ["src"],
   "ext": "ts",
-  "exec": "ts-node src/index.ts --no-questions --verbose"
+  "exec": "ts-node src/index.ts --no-questions --no-overwrite --verbose"
 }
