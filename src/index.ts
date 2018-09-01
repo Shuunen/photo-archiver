@@ -14,7 +14,7 @@ const exiftoolExe = pathResolve('node_modules/exiftool-vendored.exe/bin/exiftool
 const jpegRecompress = pathResolve('bin/jpeg-recompress')
 const argv = minimist(process.argv.slice(2))
 const currentPath = process.cwd()
-let dirs = []
+const dirs = []
 let startTime = null
 let config = {
   avoidCompress: false,
@@ -92,6 +92,12 @@ function getTimestampMs() {
   return Math.round(Date.now())
 }
 
+function readablePath(path) {
+  const regex = /:?\\+|\/+/gm
+  const subst = '\/'
+  return path.replace(regex, subst)
+}
+
 function getDirs() {
   return new Promise((resolve, reject) => {
     getDirectories(config.basepath).map((dir) => {
@@ -112,12 +118,10 @@ function getDirs() {
     if (!dirs.length) {
       dirs.push(config.basepath)
     }
-    // if process one active, only take first dir
-    if (config.processOne) {
-      dirs = [dirs[0]]
-    }
     if (config.verbose) {
-      log.info('found dir(s)', dirs)
+      log.info('found dir(s)', dirs.map(dir => {
+        return readablePath(dir).replace(readablePath(config.basepath), '').substr(1)
+      }).join(', '))
     }
     resolve('success')
   })
@@ -374,10 +378,13 @@ function fixExifDate(prefix: string, photo: string, dir: DirInfos): Promise<stri
   })
 }
 
-async function checkPhotos(photos: PhotoSet, dir: DirInfos) {
+async function checkPhotos(photos: PhotoSet, dir: DirInfos): Promise<string> {
   let count = photos.length
-  if (config.verbose) {
+  if (count > 1 && config.verbose) {
     log.info('found', count, 'photos in dir "' + dir.name + '"')
+  }
+  if (count < 1) {
+    return Promise.resolve('found no photos in dir "' + dir.name + '"')
   }
   if (config.processOne) {
     log.info('will process only one photo as set in config')
@@ -443,13 +450,15 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos) {
 
 }
 
-function checkNextDir() {
+function checkNextDir(): Promise<string> {
   if (!dirs.length) {
     return Promise.resolve('no more directories to check')
   }
   // extract first
-  const dir = dirs.shift() // full path
-  const dirName = basename(dir) // directory/folder name
+  // full path
+  const dir = dirs.shift()
+  // directory/folder name
+  const dirName = basename(dir)
   if (config.verbose) {
     log.info('reading dir "' + dirName + '"')
   }
@@ -505,14 +514,20 @@ function checkNextDir() {
       if (config.verbose) {
         log.info(status)
       }
+      if (config.processOne && operations.photoProcess.count > 0) {
+        return 'success, processed one photo only'
+      }
       return checkNextDir()
     })
-    .catch(err => log.error(err))
+    .catch(err => {
+      log.error(err)
+      return err.message
+    })
 }
 
 function showMetrics() {
   const timeElapsed: number = getTimestampMs() - startTime
-  const timeReadable: string = prettyMs(timeElapsed, {verbose: true})
+  const timeReadable: string = prettyMs(timeElapsed, { verbose: true })
   const photoProcessed: number = operations.photoProcess.count
   const timeElapsedPerPhoto = Math.round(timeElapsed / photoProcessed) || 0
   if (photoProcessed > 0) {
@@ -524,10 +539,10 @@ function showMetrics() {
     log.info(`- skip date fix : ${photosDateFixSkipped}`)
     */
     if (timeElapsedPerPhoto > 0) {
-      log.info(`spent an average of ${prettyMs(timeElapsedPerPhoto, {verbose: true})} per photo`)
+      log.info(`spent an average of ${prettyMs(timeElapsedPerPhoto, { verbose: true })} per photo`)
     }
     if (timeElapsedPerPhoto > 0 && photoProcessed > 1) {
-      log.info(`whole process took ${prettyMs(timeElapsed, {verbose: true})}`)
+      log.info(`whole process took ${prettyMs(timeElapsed, { verbose: true })}`)
     }
   } else {
     log.info('no photos compressed or date fixed')
