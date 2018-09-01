@@ -12,19 +12,19 @@ import * as log from 'signale'
 const exiftool = new ExifTool.ExifTool({ minorErrorsRegExp: /error|warning/i }) // show all errors
 const exiftoolExe = pathResolve('node_modules/exiftool-vendored.exe/bin/exiftool')
 const jpegRecompress = pathResolve('bin/jpeg-recompress')
-const argv = minimist(process.argv.slice(2))
 const currentPath = process.cwd()
+let config = minimist(process.argv.slice(2), { default: {
+  compress: true,
+  forceSsim: false,
+  marker: '-archived', // my-photo.jpg => my-photo-archived.jpg
+  overwrite: true, // true : will replace original photos / false : will use config marker and create new files
+  path: currentPath + '/test',
+  processOne: true,
+  questions: true,
+  verbose: false,
+}})
 const dirs = []
 let startTime = null
-let config = {
-  avoidCompress: false,
-  basepath: argv.path || currentPath + '/test',
-  forceSsim: false,
-  overwrite: true, // true : will replace original photos / false : will use below suffix and create new files
-  processOne: true,
-  suffix: '-archived', // my-photo.jpg => my-photo-archived.jpg
-  verbose: true,
-}
 const operations = {
   compress: {
     fail: 0,
@@ -69,9 +69,9 @@ const operations = {
 }
 const questions = [
   {
-    default: config.basepath,
+    default: config.path,
     message: 'Path to photos ?',
-    name: 'basepath',
+    name: 'path',
     type: 'input',
   },
   {
@@ -100,9 +100,9 @@ function readablePath(path) {
 
 function getDirs() {
   return new Promise((resolve, reject) => {
-    getDirectories(config.basepath).map((dir) => {
+    getDirectories(config.path).map((dir) => {
       // dir will be succesivly 2013, 2014,...
-      const subDir = join(config.basepath, dir)
+      const subDir = join(config.path, dir)
       if (config.verbose) {
         log.info('dir', dir)
         log.info('subDir', subDir)
@@ -116,11 +116,11 @@ function getDirs() {
     })
     // if no subdir, just process input dir
     if (!dirs.length) {
-      dirs.push(config.basepath)
+      dirs.push(config.path)
     }
     if (config.verbose) {
       log.info('found dir(s)', dirs.map(dir => {
-        return readablePath(dir).replace(readablePath(config.basepath), '').substr(1)
+        return readablePath(dir).replace(readablePath(config.path), '').substr(1)
       }).join(', '))
     }
     resolve('success')
@@ -128,12 +128,12 @@ function getDirs() {
 }
 
 function getFinalPhotoName(photo) {
-  return config.overwrite ? photo : photo.replace(/(\.j)/i, config.suffix + '$1')
+  return config.overwrite ? photo : photo.replace(/(\.j)/i, config.marker + '$1')
 }
 
 function compress(prefix, photo, method = 'ssim'): Promise<string> {
   return new Promise((resolve, reject) => {
-    if (config.avoidCompress) {
+    if (config.compress) {
       operations.compress.skip++
       return resolve('avoiding compression (config)')
     }
@@ -143,7 +143,7 @@ function compress(prefix, photo, method = 'ssim'): Promise<string> {
     }
     let message = 'compressing via ' + methodToUse
     // photo = photo.replace(/\\/g, '/')
-    if (photo.indexOf(config.suffix) !== -1) {
+    if (photo.indexOf(config.marker) !== -1) {
       operations.compress.skip++
       message = 'success (already processed)'
       log.info({ prefix, message })
@@ -505,7 +505,7 @@ function checkNextDir(): Promise<string> {
   }
   const oDir: DirInfos = { name: dirName, year, month }
   const include = join(dir, '**/*.(jpg|jpeg)')
-  const exclude = '!' + join(dir, '**/*' + config.suffix + '.(jpg|jpeg)')
+  const exclude = '!' + join(dir, '**/*' + config.marker + '.(jpg|jpeg)')
   const rules = [include, exclude]
   // log.info('search files with rules', rules)
   return globby(rules, { nocase: true })
@@ -555,21 +555,30 @@ function killExifTool() {
   return Promise.resolve('success, does not wait for exif-tool killing')
 }
 
+function startProcess() {
+  startTime = getTimestampMs()
+  getDirs()
+    .then(() => checkNextDir())
+    .then(status => log.info(status))
+    .catch((err) => log.error(err))
+    .then(() => showMetrics())
+    .catch((err) => log.error(err))
+    .then(() => killExifTool())
+    .catch((err) => log.error(err))
+    .then(() => log.complete('Photo Archiver'))
+}
+
 function start() {
   log.start('Photo Archiver (' + process.platform + ')')
-  inquirer.prompt(questions).then(answers => {
-    config = { ...config, ...answers }
-    startTime = getTimestampMs()
-    getDirs()
-      .then(() => checkNextDir())
-      .then(status => log.info(status))
-      .catch((err) => log.error(err))
-      .then(() => showMetrics())
-      .catch((err) => log.error(err))
-      .then(() => killExifTool())
-      .catch((err) => log.error(err))
-      .then(() => log.complete('Photo Archiver'))
-  })
+  log.info(config)
+  if (config.questions) {
+    inquirer.prompt(questions).then(answers => {
+      config = { ...config, ...answers }
+      startProcess()
+    })
+  } else {
+    startProcess()
+  }
 }
 
 start()
