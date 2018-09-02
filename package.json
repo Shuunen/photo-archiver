@@ -12,21 +12,25 @@
     "lint": "tslint -c tslint.json 'src/**/*.ts'"
   },
   "dependencies": {
+    "chalk": "^2.4.1",
     "exiftool-vendored": "^6.1.2",
     "globby": "^8.0.1",
     "inquirer": "^6.2.0",
     "minimist": "^1.2.0",
     "pretty-ms": "^3.2.0",
     "signale": "^1.2.1",
+    "table": "^4.0.3",
     "typescript": "^3.0.3"
   },
   "devDependencies": {
+    "@types/chalk": "^2.2.0",
     "@types/globby": "^8.0.0",
     "@types/inquirer": "^0.0.43",
     "@types/minimist": "^1.2.0",
     "@types/node": "^10.0.6",
     "@types/pretty-ms": "^3.2.0",
     "@types/signale": "^1.2.0",
+    "@types/table": "^4.0.5",
     "nodemon": "^1.17.4",
     "ts-node": "^7.0.1",
     "tslint": "^5.10.0"

@@ -1,4 +1,5 @@
 // tslint:disable:max-file-line-count
+import chalk from 'chalk'
 import { exec } from 'child_process'
 import * as ExifTool from 'exiftool-vendored'
 import { readdirSync, statSync, unlink } from 'fs'
@@ -8,6 +9,7 @@ import * as minimist from 'minimist'
 import { basename, join, resolve as pathResolve } from 'path'
 import * as prettyMs from 'pretty-ms'
 import * as log from 'signale'
+import { ColumnConfig, table, TableUserConfig } from 'table'
 
 const exiftool = new ExifTool.ExifTool({ minorErrorsRegExp: /error|warning/i }) // show all errors
 const exiftoolExe = pathResolve('node_modules/exiftool-vendored.exe/bin/exiftool')
@@ -95,9 +97,15 @@ function getTimestampMs() {
 }
 
 function readablePath(path) {
-  const regex = /:?\\+|\/+/gm
+  const regex = /\\+|\/+/gm
   const subst = '\/'
   return path.replace(regex, subst)
+}
+
+function readableDirs(directories) {
+  return directories.map(dir => {
+    return readablePath(dir).replace(readablePath(config.path), '').substr(1)
+  }).join(', ')
 }
 
 function getDirs() {
@@ -121,9 +129,7 @@ function getDirs() {
       dirs.push(config.path)
     }
     if (config.verbose) {
-      log.info('found dir(s)', dirs.map(dir => {
-        return readablePath(dir).replace(readablePath(config.path), '').substr(1)
-      }).join(', '))
+      log.info('found dir(s)', readableDirs(dirs))
     }
     resolve('success')
   })
@@ -361,7 +367,7 @@ function fixExifDate(prefix: string, photo: string, dir: DirInfos): Promise<stri
           // const newDateStr = '2016-02-06T16:56:00'
           log.info({ prefix, message: 'new date will be : ' + newDateStr })
           if (originalDate) {
-          log.info({ prefix, message: 'instead of       : ' + dateToIsoString(originalDate) })
+            log.info({ prefix, message: 'instead of       : ' + dateToIsoString(originalDate) })
           }
           writeExifDate(prefix, filepath, newDateStr)
             .then(r => resolve(r.toString()))
@@ -527,24 +533,88 @@ function checkNextDir(): Promise<string> {
     })
 }
 
+function getMetricRow(label, data) {
+  const row = [label]
+  if (!data.success) {
+    row.push(0)
+  } else {
+    row.push(chalk.green(data.success.toString()))
+  }
+  if (!data.skip) {
+    row.push(0)
+  } else {
+    row.push(chalk.yellow(data.skip.toString()))
+  }
+  if (!data.fail) {
+    row.push(0)
+  } else {
+    row.push(chalk.red(data.fail.toString()))
+  }
+  if (!data.failedPaths) {
+    row.push('')
+  } else {
+    row.push(readableDirs(data.failedPaths))
+  }
+  return row
+}
+
+function showMetricsTable() {
+  const data = [
+    ['', 'success', 'skip', 'fail', 'fail paths'],
+    getMetricRow('Compressed', operations.compress),
+    getMetricRow('Date fixed', operations.dateFix),
+    getMetricRow('Exif repaired', operations.exifRepair),
+  ]
+  if (operations.fileDeletion.fail) {
+    data.push(getMetricRow('File deletions', operations.fileDeletion))
+  }
+  if (operations.readDate.fail) {
+    data.push(getMetricRow('Date read', operations.readDate))
+  }
+  if (operations.readDir.fail) {
+    data.push(getMetricRow('Dir read', operations.readDir))
+  }
+  // Quick fix until https://github.com/gajus/table/issues/72 is solved
+  const optWrap: ColumnConfig = {
+    width: 70,
+    wrapWord: true,
+  } as ColumnConfig
+  const opts: TableUserConfig = {
+    columns: {
+      0: {
+        width: 16,
+      },
+      1: {
+        alignment: 'center',
+        width: 9,
+      },
+      2: {
+        alignment: 'center',
+        width: 9,
+      },
+      3: {
+        alignment: 'center',
+        width: 9,
+      },
+      4: optWrap,
+    },
+  }
+  // tslint:disable-next-line:no-console
+  console.log(table(data, opts))
+}
+
 function showMetrics() {
   const timeElapsed: number = getTimestampMs() - startTime
   const timeReadable: string = prettyMs(timeElapsed, { verbose: true })
   const photoProcessed: number = operations.photoProcess.count
   const timeElapsedPerPhoto = Math.round(timeElapsed / photoProcessed) || 0
   if (photoProcessed > 0) {
-    /*
-    log.info('Number of photos :')
-    log.info(`- compressed    : ${photosCompressed}`)
-    log.info(`- skip compress : ${photosCompressSkipped}`)
-    log.info(`- date fixed    : ${photosDateFixed}`)
-    log.info(`- skip date fix : ${photosDateFixSkipped}`)
-    */
     if (timeElapsedPerPhoto > 0) {
       log.info(`spent an average of ${prettyMs(timeElapsedPerPhoto, { verbose: true })} per photo`)
     }
     if (timeElapsedPerPhoto > 0 && photoProcessed > 1) {
       log.info(`whole process took ${prettyMs(timeElapsed, { verbose: true })}`)
+      showMetricsTable()
     }
   } else {
     log.info('no photos compressed or date fixed')
@@ -575,8 +645,8 @@ function startProcess() {
 function start() {
   log.start('Photo Archiver (' + process.platform + ')')
   if (config.verbose) {
-      log.info('init with config :')
-      log.info(config)
+    log.info('init with config :')
+    log.info(config)
   }
   if (config.questions) {
     inquirer.prompt(questions).then(answers => {

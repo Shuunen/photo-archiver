@@ -1,0 +1,1 @@
+https://github.com/mceachen/exiftool-vendored.js/tree/master/test
