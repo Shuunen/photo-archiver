@@ -403,7 +403,7 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos): Promise<string> {
   }
   let bar = null
   if (!config.verbose) {
-    bar = new ProgressBar('\n[:bar] processing :rate photos/s, should complete in :etas \n\n', {
+    bar = new ProgressBar('[:bar] processing folder : ' + dir.name, {
       complete: '=',
       incomplete: ' ',
       total: count,
