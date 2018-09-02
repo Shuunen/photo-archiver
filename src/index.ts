@@ -8,6 +8,7 @@ import * as inquirer from 'inquirer'
 import * as minimist from 'minimist'
 import { basename, join, resolve as pathResolve } from 'path'
 import * as prettyMs from 'pretty-ms'
+import * as ProgressBar from 'progress'
 import * as log from 'signale'
 import { ColumnConfig, table, TableUserConfig } from 'table'
 
@@ -268,14 +269,14 @@ function writeExifDate(prefix, filepath, newDateStr) {
           if (err) {
             operations.fileDeletion.fail++
             operations.fileDeletion.failedPaths.push(filepath + '_original')
-            log.error(err)
+            log.error(config.verbose ? err : err.message)
           }
         })
         // because above unlink is async, let it work on is own and resolve now
         resolve('success, updated photo date')
       })
       .catch(err => {
-        log.error(err)
+        log.error(config.verbose ? err : err.message)
         operations.dateFix.fail++
         operations.dateFix.failedPaths.push(filepath)
         reject('failed at writing date exif')
@@ -382,7 +383,7 @@ function fixExifDate(prefix: string, photo: string, dir: DirInfos): Promise<stri
       .catch(err => {
         operations.dateFix.fail++
         operations.dateFix.failedPaths.push(photo)
-        log.error(err)
+        log.error(config.verbose ? err : err.message)
         reject('failed at reading exif')
       })
   })
@@ -400,6 +401,15 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos): Promise<string> {
     log.info('will process only one photo as set in config')
     count = 1
   }
+  let bar = null
+  if (!config.verbose) {
+    bar = new ProgressBar('\n[:bar] processing :rate photos/s, should complete in :etas \n\n', {
+      complete: '=',
+      incomplete: ' ',
+      total: count,
+      width: 40,
+    })
+  }
   // log.info(photos)
   for (let i = 0; i < count; i++) {
     const photo = photos[i]
@@ -409,6 +419,9 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos): Promise<string> {
     }
     const num = i + 1 + ''
     const prefix = '[photo ' + num + ']'
+    if (!config.verbose) {
+      bar.tick()
+    }
     operations.photoProcess.count++
     if (config.verbose) {
       log.info('processing photo', num, '(' + name + ')')
@@ -532,7 +545,7 @@ function checkNextDir(): Promise<string> {
       return checkNextDir()
     })
     .catch(err => {
-      log.error(err)
+      log.error(config.verbose ? err : err.message)
       return err.message
     })
 }
@@ -613,7 +626,7 @@ function showMetrics() {
       log.info(`spent an average of ${prettyMs(timeElapsedPerPhoto, { verbose: true })} per photo`)
     }
     if (timeElapsedPerPhoto > 0 && photoProcessed > 1) {
-      log.info(`whole process took ${prettyMs(timeElapsed, { verbose: true })}`)
+      log.info(`whole process took ${prettyMs(timeElapsed, { verbose: true })} \n`)
       showMetricsTable()
     }
   } else {
@@ -634,16 +647,17 @@ function startProcess() {
   getDirs()
     .then(() => checkNextDir())
     .then(status => config.verbose ? log.info(status) : true)
-    .catch((err) => log.error(err))
+    .catch((err) => log.error(config.verbose ? err : err.message))
     .then(() => showMetrics())
-    .catch((err) => log.error(err))
+    .catch((err) => log.error(config.verbose ? err : err.message))
     .then(() => killExifTool())
-    .catch((err) => log.error(err))
+    .catch((err) => log.error(config.verbose ? err : err.message))
     .then(() => log.complete('Photo Archiver'))
 }
 
 function start() {
   log.start('Photo Archiver (' + process.platform + ')')
+  // log.info(config)
   if (config.verbose) {
     log.info('init with config :')
     log.info(config)
