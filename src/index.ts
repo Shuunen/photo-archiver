@@ -104,8 +104,8 @@ function readablePath(path) {
 
 function readableDirs(directories) {
   return directories.map(dir => {
-    return readablePath(dir).replace(readablePath(config.path), '').substr(1)
-  }).join(' & ')
+    return readablePath(dir).replace(readablePath(config.path), '')
+  }).join(chalk.gray(' & '))
 }
 
 function getDirs() {
@@ -139,7 +139,7 @@ function getFinalPhotoName(photo) {
   return config.overwrite ? photo : photo.replace(/(\.j)/i, config.marker + '$1')
 }
 
-function compress(prefix, photo, method = 'ssim'): Promise<string> {
+function compress(prefix, photo, method = 'ssim', failAlreadyCount = false): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!config.compress) {
       operations.compress.skip++
@@ -167,8 +167,10 @@ function compress(prefix, photo, method = 'ssim'): Promise<string> {
     exec(command, (err, stdout, stderr) => {
       if (err) {
         // node couldn't execute the command
-        operations.compress.fail++
-        operations.compress.failedPaths.push(photo)
+        if (!failAlreadyCount) {
+          operations.compress.fail++
+          operations.compress.failedPaths.push(photo)
+        }
         reject(err)
       } else {
         // the *entire* stdout and stderr (buffered)
@@ -407,8 +409,8 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos): Promise<string> {
     }
     const num = i + 1 + ''
     const prefix = '[photo ' + num + ']'
+    operations.photoProcess.count++
     if (config.verbose) {
-      operations.photoProcess.count++
       log.info('processing photo', num, '(' + name + ')')
     }
     await compress(prefix, photo, 'smallfry')
@@ -420,7 +422,7 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos): Promise<string> {
           } else {
             log.warn({ prefix, message: 'smallfry compression failed on "' + photo + '", trying ssim...' })
           }
-          return compress(prefix, photo, 'ssim')
+          return compress(prefix, photo, 'ssim', true)
         } else {
           throw error
         }
@@ -442,7 +444,9 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos): Promise<string> {
         if (!message.includes || message.includes('failed at writing date exif')) {
           // repair exif of failed date fix files
           log.info({ prefix, message: 'exif fix failed, repairing exif & try again' })
-          return repairExif(prefix, photo).then(() => fixExifDate(prefix, photo, dir))
+          return repairExif(prefix, photo)
+            .then(() => fixExifDate(prefix, photo, dir))
+            .catch(err => log.error({ prefix, message: (config.verbose ? err : err.message) }))
         }
         return message
       })
@@ -452,7 +456,7 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos): Promise<string> {
         }
         return true
       })
-      .catch(err => log.error(err))
+      .catch(err => log.error({ prefix, message: (config.verbose ? err : err.message) }))
   }
   return Promise.resolve('check photos done in dir "' + dir.name + '"')
 
