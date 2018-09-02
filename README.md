@@ -14,14 +14,21 @@ Then you'll be guided :)
 
 ## Thanks & Licences
 
-* Exiftool-vendored.js © Matthew McEachen (https://github.com/mceachen/exiftool-vendored.js)
-* Exiftoll © Phil Harvey (http://owl.phy.queensu.ca/~phil/exiftool/index.html)
-* JPEG-Archive © 2015 Daniel G. Taylor
-* Image Quality Assessment (IQA) © 2011 Tom Distler (http://tdistler.com)
-* SmallFry © 2014 Derek Buitenhuis (https://github.com/dwbuiten)
-* Globby © Sindre Sorhus (https://github.com/sindresorhus/globby)
-* Inquirer © 2016 Simon Boudrias (https://github.com/SBoudrias/Inquirer.js)
-* Minimist (https://github.com/substack/minimist)
-* Typescript (https://github.com/Microsoft/TypeScript)
-* Nodemon (https://github.com/remy/nodemon)
-* Tslint (https://github.com/palantir/tslint)
+* [Exiftool-vendored.js](https://github.com/mceachen/exiftool-vendored.js) © Matthew McEachen
+* [Exiftool](http://owl.phy.queensu.ca/~phil/exiftool/index.html) © Phil Harvey
+* [JPEG-Archive](https://github.com/danielgtaylor/jpeg-archive) © 2015 Daniel G. Taylor
+* [Image Quality Assessment (IQA)](http://tdistler.com) © 2011 Tom Distler
+* [SmallFry](https://github.com/dwbuiten/smallfry) © 2014 Derek Buitenhuis
+* [Globby](https://github.com/sindresorhus/globby) © Sindre Sorhus
+* [Chalk](https://github.com/chalk/chalk) © Sindre Sorhus
+* [Pretty-Ms](https://github.com/sindresorhus/pretty-ms) © Sindre Sorhus
+* [Inquirer](https://github.com/SBoudrias/Inquirer.js) © 2016 Simon Boudrias
+* [Minimist](https://github.com/substack/minimist)
+* [Typescript](https://github.com/Microsoft/TypeScript)
+* [Nodemon](https://github.com/remy/nodemon)
+* [Tslint](https://github.com/palantir/tslint)
+* [Node-Progress](https://github.com/visionmedia/node-progress) © 2017 TJ Holowaychuk
+* [Signale](https://github.com/klauscfhq/signale) © Klaus Sinani
+* [Table](https://github.com/gajus/table) © 2016 Gajus Kuizinas
+
+Big thumbs up for all of them <3
