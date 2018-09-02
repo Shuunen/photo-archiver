@@ -105,7 +105,7 @@ function readablePath(path) {
 function readableDirs(directories) {
   return directories.map(dir => {
     return readablePath(dir).replace(readablePath(config.path), '').substr(1)
-  }).join(', ')
+  }).join(' & ')
 }
 
 function getDirs() {
@@ -535,32 +535,34 @@ function checkNextDir(): Promise<string> {
 
 function getMetricRow(label, data) {
   const row = [label]
+  const spacer = '  '
   if (!data.success) {
-    row.push(0)
+    row.push(spacer + '0')
   } else {
-    row.push(chalk.green(data.success.toString()))
+    row.push(spacer + chalk.green(data.success.toString()))
   }
   if (!data.skip) {
-    row.push(0)
+    row.push(spacer + '0')
   } else {
-    row.push(chalk.yellow(data.skip.toString()))
+    row.push(spacer + chalk.yellow(data.skip.toString()))
   }
   if (!data.fail) {
-    row.push(0)
+    row.push(spacer + '0')
   } else {
-    row.push(chalk.red(data.fail.toString()))
+    row.push(spacer + chalk.red(data.fail.toString()))
   }
   if (!data.failedPaths) {
-    row.push('')
+    row.push(spacer)
   } else {
     row.push(readableDirs(data.failedPaths))
+    // row.push('bla bla bla')
   }
   return row
 }
 
 function showMetricsTable() {
   const data = [
-    ['', 'success', 'skip', 'fail', 'fail paths'],
+    ['', 'Success', ' Skip', ' Fail', 'Fail photo and dir paths'],
     getMetricRow('Compressed', operations.compress),
     getMetricRow('Date fixed', operations.dateFix),
     getMetricRow('Exif repaired', operations.exifRepair),
@@ -576,26 +578,20 @@ function showMetricsTable() {
   }
   // Quick fix until https://github.com/gajus/table/issues/72 is solved
   const optWrap: ColumnConfig = {
-    width: 70,
+    width: 80,
     wrapWord: true,
   } as ColumnConfig
+  const optNumber: ColumnConfig = {
+    width: 7,
+  }
   const opts: TableUserConfig = {
     columns: {
       0: {
-        width: 16,
+        alignment: 'right',
       },
-      1: {
-        alignment: 'center',
-        width: 9,
-      },
-      2: {
-        alignment: 'center',
-        width: 9,
-      },
-      3: {
-        alignment: 'center',
-        width: 9,
-      },
+      1: optNumber,
+      2: optNumber,
+      3: optNumber,
       4: optWrap,
     },
   }
