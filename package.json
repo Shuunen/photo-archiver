@@ -9,7 +9,8 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "nodemon",
-    "lint": "tslint -c tslint.json 'src/**/*.ts'"
+    "lint": "tslint -c tslint.json --project tsconfig.json '{src,test}/**/*.ts'",
+    "lint:fix": "tslint -c tslint.json --project tsconfig.json --fix '{src,test}/**/*.ts'"
   },
   "dependencies": {
     "chalk": "^2.4.1",
@@ -19,6 +20,7 @@
     "minimist": "^1.2.0",
     "pretty-ms": "^3.2.0",
     "progress": "^2.0.0",
+    "shuutils": "^2.1.0",
     "signale": "^1.2.1",
     "table": "^4.0.3",
     "typescript": "^3.0.3"

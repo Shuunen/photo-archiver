@@ -9,6 +9,7 @@ import * as minimist from 'minimist'
 import { basename, join, resolve as pathResolve } from 'path'
 import * as prettyMs from 'pretty-ms'
 import * as ProgressBar from 'progress'
+import { dateToIsoString, getTimestampMs } from 'shuutils'
 import * as log from 'signale'
 import { ColumnConfig, table, TableUserConfig } from 'table'
 
@@ -93,10 +94,6 @@ function getDirectories(path) {
   })
 }
 
-function getTimestampMs() {
-  return Math.round(Date.now())
-}
-
 function readablePath(path) {
   const regex = /\\+|\/+/gm
   const subst = '\/'
@@ -110,7 +107,7 @@ function readableDirs(directories) {
 }
 
 function getDirs() {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     getDirectories(config.path).map((dir) => {
       // dir will be succesivly 2013, 2014,...
       const subDir = join(config.path, dir)
@@ -191,6 +188,12 @@ function compress(prefix, photo, method = 'ssim', failAlreadyCount = false): Pro
           }
         } else {
           operations.compress.success++
+          if (failAlreadyCount) {
+            // if previous compression failed and this one worked out
+            // remove last failed metric
+            operations.compress.fail--
+            operations.compress.failedPaths.pop()
+          }
           message = 'success, compressed'
           if (config.verbose) {
             log.success({ prefix, message })
@@ -202,19 +205,6 @@ function compress(prefix, photo, method = 'ssim', failAlreadyCount = false): Pro
       }
     })
   })
-}
-
-function dateToIsoStringWithTimezoneHandling(date: Date): string {
-  // from https://stackoverflow.com/a/37661393/1317546
-  return new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString()
-}
-
-function dateToIsoString(date: Date): string {
-  let dateStr = dateToIsoStringWithTimezoneHandling(date)
-  if (dateStr[dateStr.length - 1].toLowerCase() === 'z') {
-    dateStr = dateStr.substr(0, dateStr.length - 1)
-  }
-  return dateStr
 }
 
 function zeroIfNeeded(date: number | string) {
@@ -337,7 +327,7 @@ function fixExifDate(prefix: string, photo: string, dir: DirInfos): Promise<stri
         if (originalDate) {
           operations.readDate.success++
           if (config.verbose) {
-            log.info({ prefix, message: 'original date found : ' + dateToIsoString(originalDate).split('T')[0] })
+            log.info({ prefix, message: 'original date found : ' + dateToIsoString(originalDate, true).split('T')[0] })
           }
           if (dir.year !== null && year !== dir.year) {
             log.warn({ prefix, message: 'fixing photo year "' + year + '" => "' + dir.year + '"' })
@@ -365,12 +355,12 @@ function fixExifDate(prefix: string, photo: string, dir: DirInfos): Promise<stri
           }
         }
         if (doRewrite) {
-          const newDateStr = dateToIsoString(newDate)
+          const newDateStr = dateToIsoString(newDate, true)
           // log.warn({ prefix, message: 'USING static date for testing purpose' })
           // const newDateStr = '2016-02-06T16:56:00'
           log.info({ prefix, message: 'new date will be : ' + newDateStr })
           if (originalDate) {
-            log.info({ prefix, message: 'instead of       : ' + dateToIsoString(originalDate) })
+            log.info({ prefix, message: 'instead of       : ' + dateToIsoString(originalDate, true) })
           }
           writeExifDate(prefix, filepath, newDateStr)
             .then(r => resolve(r.toString()))
