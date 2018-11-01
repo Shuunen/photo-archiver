@@ -1,4 +1,3 @@
-// tslint:disable:max-file-line-count
 import chalk from 'chalk'
 import { exec } from 'child_process'
 import * as ExifTool from 'exiftool-vendored'
@@ -11,13 +10,14 @@ import * as prettyMs from 'pretty-ms'
 import * as ProgressBar from 'progress'
 import { dateToIsoString, getTimestampMs } from 'shuutils'
 import * as log from 'signale'
-import { ColumnConfig, table, TableUserConfig } from 'table'
+import { ColumnConfig, table, TableUserConfig } from 'table' // eslint-disable-line no-unused-vars
+import { Config, DirInfos, PhotoPath, PhotoSet } from './types' // eslint-disable-line no-unused-vars
 
-const exiftool = new ExifTool.ExifTool({ minorErrorsRegExp: /error|warning/i }) // show all errors
+const exiftool = new ExifTool.ExifTool() // { minorErrorsRegExp: /error|warning/i } shows all errors
 const exiftoolExe = pathResolve('node_modules/exiftool-vendored.exe/bin/exiftool')
 const jpegRecompress = pathResolve('bin/jpeg-recompress')
 const currentPath = process.cwd()
-let config: Config = minimist(process.argv.slice(2), {
+let config = new Config(minimist(process.argv.slice(2), {
   default: {
     compress: true,
     forceSsim: false,
@@ -28,7 +28,7 @@ let config: Config = minimist(process.argv.slice(2), {
     questions: true,
     verbose: false
   }
-}) as Config
+}))
 const dirs = []
 let startTime = null
 const operations = {
@@ -96,7 +96,7 @@ function getDirectories (path) {
 
 function readablePath (path) {
   const regex = /\\+|\/+/gm
-  const subst = '\/'
+  const subst = '/'
   return path.replace(regex, subst)
 }
 
@@ -225,12 +225,10 @@ function getDateFromTags (prefix, tags): Date {
    log.info('  DateTimeCreated :', tags.DateTimeCreated)
    log.info('  DateTimeUTC :', tags.DateTimeUTC)
    log.info('  DateTimeOriginal :', tags.DateTimeOriginal) */
-  // tslint:disable-next-line:no-any
   // log.info('  FileCreateDate :', (tags as any).FileCreateDate)
   if (tags.CreateDate) {
     return new Date(tags.CreateDate + '')
   }
-  // tslint:disable-next-line:no-any
   const date = (tags as any).FileCreateDate
   if (date) {
     const month = zeroIfNeeded(date.month)
@@ -269,7 +267,7 @@ function writeExifDate (prefix, filepath, newDateStr) {
         log.error(config.verbose ? err : err.message)
         operations.dateFix.fail++
         operations.dateFix.failedPaths.push(filepath)
-        reject('failed at writing date exif')
+        reject(new Error('failed at writing date exif'))
       })
   })
 }
@@ -374,7 +372,7 @@ function fixExifDate (prefix: string, photo: string, dir: DirInfos): Promise<str
         operations.dateFix.fail++
         operations.dateFix.failedPaths.push(photo)
         log.error(config.verbose ? err : err.message)
-        reject('failed at reading exif')
+        reject(new Error('failed at reading exif'))
       })
   })
 }
@@ -476,7 +474,7 @@ function checkNextDir (): Promise<string> {
   if (config.verbose) {
     log.info('reading dir "' + dirName + '"')
   }
-  const dateMatches = dirName.match(/(\d{4})\-(\d{2})/)
+  const dateMatches = dirName.match(/(\d{4})-(\d{2})/)
   let year = null
   let month = null
   if (!dateMatches || !dateMatches.length || dateMatches.length !== 3) {
@@ -607,7 +605,7 @@ function showMetricsTable () {
 
 function showMetrics () {
   const timeElapsed: number = getTimestampMs() - startTime
-  const timeReadable: string = prettyMs(timeElapsed, { verbose: true })
+  // const timeReadable: string = prettyMs(timeElapsed, { verbose: true })
   const photoProcessed: number = operations.photoProcess.count
   const timeElapsedPerPhoto = Math.round(timeElapsed / photoProcessed) || 0
   if (photoProcessed > 0) {
@@ -662,26 +660,6 @@ function start () {
 }
 
 start()
-
-type PhotoPath = string
-type PhotoSet = PhotoPath[]
-
-interface DirInfos {
-  name: string // folder name
-  year: number
-  month: number
-}
-
-interface Config extends minimist.ParsedArgs {
-  compress: boolean
-  forceSsim: boolean
-  marker: string // my-photo.jpg => my-photo-archived.jpg
-  overwrite: boolean // boolean : will replace original photos / boolean : will use config marker and create new files
-  path: string
-  processOne: boolean
-  questions: boolean
-  verbose: boolean
-}
 
 // Bug 1
 /*
