@@ -1,6 +1,6 @@
 {
   "name": "photo-archiver",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "main": "index.ts",
   "repository": "git@github.com:Shuunen/photo-archiver.git",
   "author": "Romain Racamier-Lafon <romain.racamier@gmail.com>",
