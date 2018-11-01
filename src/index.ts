@@ -26,8 +26,8 @@ let config: Config = minimist(process.argv.slice(2), {
     path: currentPath + '/test',
     processOne: false,
     questions: true,
-    verbose: false,
-  },
+    verbose: false
+  }
 }) as Config
 const dirs = []
 let startTime = null
@@ -36,77 +36,77 @@ const operations = {
     fail: 0,
     failedPaths: [],
     skip: 0,
-    success: 0,
+    success: 0
   },
   dateFix: {
     fail: 0,
     failedPaths: [],
     skip: 0,
-    success: 0,
+    success: 0
   },
   exifRepair: {
     fail: 0,
     failedPaths: [],
     skip: 0,
-    success: 0,
+    success: 0
   },
   fileDeletion: {
     fail: 0,
     failedPaths: [],
-    success: 0,
+    success: 0
   },
   photoProcess: {
     count: 0,
     fail: 0,
     failedPaths: [],
     skip: 0,
-    success: 0,
+    success: 0
   },
   readDate: {
     fail: 0,
     failedPaths: [],
-    success: 0,
+    success: 0
   },
   readDir: {
     fail: 0,
     failedPaths: [],
-    success: 0,
-  },
+    success: 0
+  }
 }
 const questions = [
   {
     default: config.path,
     message: 'Path to photos ?',
     name: 'path',
-    type: 'input',
+    type: 'input'
   },
   {
     default: config.overwrite,
     message: 'Overwrite photos ?',
     name: 'overwrite',
-    type: 'confirm',
-  },
+    type: 'confirm'
+  }
 ]
 
-function getDirectories(path) {
+function getDirectories (path) {
   return readdirSync(path).filter((file) => {
     return statSync(path + '/' + file).isDirectory()
   })
 }
 
-function readablePath(path) {
+function readablePath (path) {
   const regex = /\\+|\/+/gm
   const subst = '\/'
   return path.replace(regex, subst)
 }
 
-function readableDirs(directories) {
+function readableDirs (directories) {
   return directories.map(dir => {
     return readablePath(dir).replace(readablePath(config.path), '')
   }).join(chalk.gray(' & '))
 }
 
-function getDirs() {
+function getDirs () {
   return new Promise((resolve) => {
     getDirectories(config.path).map((dir) => {
       // dir will be succesivly 2013, 2014,...
@@ -133,11 +133,11 @@ function getDirs() {
   })
 }
 
-function getFinalPhotoName(photo) {
+function getFinalPhotoName (photo) {
   return config.overwrite ? photo : photo.replace(/(\.j)/i, config.marker + '$1')
 }
 
-function compress(prefix, photo, method = 'ssim', failAlreadyCount = false): Promise<string> {
+function compress (prefix, photo, method = 'ssim', failAlreadyCount = false): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!config.compress) {
       operations.compress.skip++
@@ -207,7 +207,7 @@ function compress(prefix, photo, method = 'ssim', failAlreadyCount = false): Pro
   })
 }
 
-function zeroIfNeeded(date: number | string) {
+function zeroIfNeeded (date: number | string) {
   let dateStr = date + ''
   if (dateStr.length === 1) {
     dateStr = '0' + dateStr
@@ -215,7 +215,7 @@ function zeroIfNeeded(date: number | string) {
   return dateStr
 }
 
-function getDateFromTags(prefix, tags): Date {
+function getDateFromTags (prefix, tags): Date {
   // log.info('  tags found :', tags)
   /*  log.info('  ModifyDate :', tags.ModifyDate)
    log.info('  CreateDate :', tags.CreateDate)
@@ -243,7 +243,7 @@ function getDateFromTags(prefix, tags): Date {
   return null
 }
 
-function writeExifDate(prefix, filepath, newDateStr) {
+function writeExifDate (prefix, filepath, newDateStr) {
   return new Promise((resolve, reject) => {
     // log.info({ prefix, message: 'writing new date : ' + newDateStr })
     // log.info({ prefix, message: 'to file : ' + filepath })
@@ -274,7 +274,7 @@ function writeExifDate(prefix, filepath, newDateStr) {
   })
 }
 
-function repairExif(prefix: string, filepath: string): Promise<string> {
+function repairExif (prefix: string, filepath: string): Promise<string> {
   return new Promise((resolve, reject) => {
     let message = ''
     if (process.platform === 'win32') {
@@ -310,7 +310,7 @@ function repairExif(prefix: string, filepath: string): Promise<string> {
   })
 }
 
-function fixExifDate(prefix: string, photo: string, dir: DirInfos): Promise<string> {
+function fixExifDate (prefix: string, photo: string, dir: DirInfos): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!dir.year && !dir.month) {
       operations.dateFix.skip++
@@ -379,7 +379,7 @@ function fixExifDate(prefix: string, photo: string, dir: DirInfos): Promise<stri
   })
 }
 
-async function checkPhotos(photos: PhotoSet, dir: DirInfos): Promise<string> {
+async function checkPhotos (photos: PhotoSet, dir: DirInfos): Promise<string> {
   let count = photos.length
   if (count > 1 && config.verbose) {
     log.info('found', count, 'photos in dir "' + dir.name + '"')
@@ -397,7 +397,7 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos): Promise<string> {
       complete: '=',
       incomplete: ' ',
       total: count,
-      width: 40,
+      width: 40
     })
   }
   // log.info(photos)
@@ -462,10 +462,9 @@ async function checkPhotos(photos: PhotoSet, dir: DirInfos): Promise<string> {
       .catch(err => log.error({ prefix, message: (config.verbose ? err : err.message) }))
   }
   return Promise.resolve('check photos done in dir "' + dir.name + '"')
-
 }
 
-function checkNextDir(): Promise<string> {
+function checkNextDir (): Promise<string> {
   if (!dirs.length) {
     return Promise.resolve('no more directories to check')
   }
@@ -540,7 +539,7 @@ function checkNextDir(): Promise<string> {
     })
 }
 
-function getMetricRow(label, data) {
+function getMetricRow (label, data) {
   const row = [label]
   const spacer = '  '
   if (!data.success) {
@@ -567,12 +566,12 @@ function getMetricRow(label, data) {
   return row
 }
 
-function showMetricsTable() {
+function showMetricsTable () {
   const data = [
     ['', 'Success', ' Skip', ' Fail', 'Fail photo and dir paths'],
     getMetricRow('Compressed', operations.compress),
     getMetricRow('Date fixed', operations.dateFix),
-    getMetricRow('Exif repaired', operations.exifRepair),
+    getMetricRow('Exif repaired', operations.exifRepair)
   ]
   if (operations.fileDeletion.fail) {
     data.push(getMetricRow('File deletions', operations.fileDeletion))
@@ -586,27 +585,27 @@ function showMetricsTable() {
   // Quick fix until https://github.com/gajus/table/issues/72 is solved
   const optWrap: ColumnConfig = {
     width: 80,
-    wrapWord: true,
+    wrapWord: true
   } as ColumnConfig
   const optNumber: ColumnConfig = {
-    width: 7,
+    width: 7
   }
   const opts: TableUserConfig = {
     columns: {
       0: {
-        alignment: 'right',
+        alignment: 'right'
       },
       1: optNumber,
       2: optNumber,
       3: optNumber,
-      4: optWrap,
-    },
+      4: optWrap
+    }
   }
   // tslint:disable-next-line:no-console
   console.log(table(data, opts))
 }
 
-function showMetrics() {
+function showMetrics () {
   const timeElapsed: number = getTimestampMs() - startTime
   const timeReadable: string = prettyMs(timeElapsed, { verbose: true })
   const photoProcessed: number = operations.photoProcess.count
@@ -624,7 +623,7 @@ function showMetrics() {
   }
 }
 
-function killExifTool() {
+function killExifTool () {
   if (config.verbose) {
     log.info('killing exif tool instance...')
   }
@@ -632,7 +631,7 @@ function killExifTool() {
   return Promise.resolve('success, does not wait for exif-tool killing')
 }
 
-function startProcess() {
+function startProcess () {
   startTime = getTimestampMs()
   getDirs()
     .then(() => checkNextDir())
@@ -645,7 +644,7 @@ function startProcess() {
     .then(() => log.complete('Photo Archiver'))
 }
 
-function start() {
+function start () {
   log.start('Photo Archiver (' + process.platform + ')')
   // log.info(config)
   if (config.verbose) {
