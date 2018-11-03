@@ -2910,10 +2910,10 @@ shebang-regex@^1.0.0:
   resolved "https://registry.yarnpkg.com/shebang-regex/-/shebang-regex-1.0.0.tgz#da42f49740c0b42db2ca9728571cb190c98efea3"
   integrity sha1-2kL0l0DAtC2yypcoVxyxkMmO/qM=
 
-shuutils@2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/shuutils/-/shuutils-2.1.0.tgz#f9a31d8cf7d6db783b622c445acb072f2be2fcd3"
-  integrity sha512-WADfc8qFEQLu8Z+WuFHfAUKs6FYv9o21aElmEWApQSEVCjJD5an4b1+AMk0O8yqC/zpvEhhXesmMwYaeyfZsWw==
+shuutils@3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/shuutils/-/shuutils-3.4.0.tgz#6eb5093f26d9e268beb53fd32ef0d4188f1501e8"
+  integrity sha512-KMCbk75qsgZiAK1MFVs4OIDdEuL0THAjUbu/+mTRAGMgjoqxsohLQs7dxkLnukXHgjGLnPmzB2/2Cg34MewlMw==
 
 signal-exit@^3.0.0, signal-exit@^3.0.2:
   version "3.0.2"
