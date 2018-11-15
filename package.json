@@ -29,7 +29,7 @@
     "@types/globby": "8.0.0",
     "@types/inquirer": "0.0.43",
     "@types/minimist": "1.2.0",
-    "@types/node": "10.12.7",
+    "@types/node": "10.12.9",
     "@types/pretty-ms": "3.2.0",
     "@types/progress": "2.0.1",
     "@types/signale": "1.2.0",
