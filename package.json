@@ -45,7 +45,10 @@
     "typescript-eslint-parser": "20.1.1"
   },
   "standard": {
-    "globals": [ "test", "expect" ],
+    "globals": [
+      "test",
+      "expect"
+    ],
     "parser": "typescript-eslint-parser",
     "plugins": [
       "typescript"

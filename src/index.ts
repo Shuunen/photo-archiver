@@ -4,31 +4,21 @@ import * as ExifTool from 'exiftool-vendored'
 import { readdirSync, statSync, unlink } from 'fs'
 import * as globby from 'globby'
 import * as inquirer from 'inquirer'
-import * as minimist from 'minimist'
 import { basename, join, resolve as pathResolve } from 'path'
 import * as prettyMs from 'pretty-ms'
 import * as ProgressBar from 'progress'
 import { dateToIsoString, getTimestampMs } from 'shuutils'
 import * as log from 'signale'
 import { ColumnConfig, table, TableUserConfig } from 'table' // eslint-disable-line no-unused-vars
-import { Config, DirInfos, PhotoPath, PhotoSet } from './types' // eslint-disable-line no-unused-vars
+import { DirInfos, PhotoPath, PhotoSet } from './types' // eslint-disable-line no-unused-vars
+import Config from './config'
 
 const exiftool = new ExifTool.ExifTool() // { minorErrorsRegExp: /error|warning/i } shows all errors
 const exiftoolExe = pathResolve('node_modules/exiftool-vendored.exe/bin/exiftool')
 const jpegRecompress = pathResolve('bin/jpeg-recompress')
-const currentPath = process.cwd()
-let config = new Config(minimist(process.argv.slice(2), {
-  default: {
-    compress: true,
-    forceSsim: false,
-    marker: '-archived', // my-photo.jpg => my-photo-archived.jpg
-    overwrite: true, // true : will replace original photos / false : will use config marker and create new files
-    path: currentPath + '/test',
-    processOne: false,
-    questions: true,
-    verbose: false
-  }
-}))
+// if process called with --plop --data=2
+// argv will looks like ['node', 'C:\path\to\photo-archiver', '--plop', '--data=2']
+let config = new Config(process.argv.slice(2))
 const dirs = []
 let startTime = null
 const operations = {
