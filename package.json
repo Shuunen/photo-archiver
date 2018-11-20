@@ -9,7 +9,8 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "nodemon",
-    "lint": "standard --fix {src,test}/**/*.ts"
+    "lint": "standard --fix {src,test}/**/*.ts",
+    "test": "jest"
   },
   "dependencies": {
     "chalk": "2.4.1",
@@ -28,6 +29,7 @@
     "@types/chalk": "2.2.0",
     "@types/globby": "8.0.0",
     "@types/inquirer": "0.0.43",
+    "@types/jest": "^23.3.9",
     "@types/minimist": "1.2.0",
     "@types/node": "10.12.9",
     "@types/pretty-ms": "3.2.0",
@@ -35,12 +37,15 @@
     "@types/signale": "1.2.0",
     "@types/table": "4.0.5",
     "eslint-plugin-typescript": "0.13.0",
+    "jest": "^23.6.0",
     "nodemon": "1.18.6",
     "standard": "12.0.1",
+    "ts-jest": "^23.10.4",
     "ts-node": "7.0.1",
     "typescript-eslint-parser": "20.1.1"
   },
   "standard": {
+    "globals": [ "test", "expect" ],
     "parser": "typescript-eslint-parser",
     "plugins": [
       "typescript"
