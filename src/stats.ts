@@ -7,14 +7,13 @@ import Logger from './logger'
 
 class Stat {
   fail: 0
-  failedPaths: []
+  failedPaths: string[]
   skip: 0
   success: 0
   count: 0
 }
 
 export default class Stats {
-  logger: Logger
   startTime: number
   compress: Stat
   dateFix: Stat
@@ -24,8 +23,7 @@ export default class Stats {
   readDate: Stat
   readDir: Stat
 
-  constructor (logger: Logger) {
-    this.logger = logger
+  constructor () {
     this.startTime = getTimestampMs()
   }
 
@@ -102,14 +100,14 @@ export default class Stats {
     const timeElapsedPerPhoto = Math.round(timeElapsed / photoProcessed) || 0
     if (photoProcessed > 0) {
       if (timeElapsedPerPhoto > 0) {
-        this.logger.info(`spent an average of ${prettyMs(timeElapsedPerPhoto, { verbose: true })} per photo`)
+        Logger.info(`spent an average of ${prettyMs(timeElapsedPerPhoto, { verbose: true })} per photo`)
       }
       if (timeElapsedPerPhoto > 0 && photoProcessed > 1) {
-        this.logger.info(`whole process took ${prettyMs(timeElapsed, { verbose: true })} \n`)
+        Logger.info(`whole process took ${prettyMs(timeElapsed, { verbose: true })} \n`)
         this.showMetricsTable()
       }
     } else {
-      this.logger.info('no photos compressed or date fixed')
+      Logger.info('no photos compressed or date fixed')
     }
   }
 }
