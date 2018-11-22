@@ -18,7 +18,6 @@ const jpegRecompress = pathResolve('bin/jpeg-recompress')
 // if process called with --plop --data=2
 // argv will looks like ['node', 'C:\path\to\photo-archiver', '--plop', '--data=2']
 let config = new Config(process.argv.slice(2))
-let stats = new Stats(Logger)
 const dirs = []
 const questions = [
   {
@@ -75,7 +74,7 @@ function getFinalPhotoName (photo) {
 function compress (prefix, photo, method = 'ssim', failAlreadyCount = false): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!config.compress) {
-      stats.compress.skip++
+      Stats.compress.skip++
       return resolve('avoiding compression (config)')
     }
     let methodToUse = method
@@ -85,7 +84,7 @@ function compress (prefix, photo, method = 'ssim', failAlreadyCount = false): Pr
     let message = 'compressing via ' + methodToUse
     // photo = photo.replace(/\\/g, '/')
     if (photo.indexOf(config.marker) !== -1) {
-      stats.compress.skip++
+      Stats.compress.skip++
       message = 'success (already processed)'
       Logger.info({ prefix, message })
       return resolve(message)
@@ -101,8 +100,8 @@ function compress (prefix, photo, method = 'ssim', failAlreadyCount = false): Pr
       if (err) {
         // node couldn't execute the command
         if (!failAlreadyCount) {
-          stats.compress.fail++
-          stats.compress.failedPaths.push(photo)
+          Stats.compress.fail++
+          Stats.compress.failedPaths.push(photo)
         }
         reject(err)
       } else {
@@ -110,24 +109,24 @@ function compress (prefix, photo, method = 'ssim', failAlreadyCount = false): Pr
         // Logger.info({ prefix, message : `stdout: ${stdout}`})
         // Logger.info({ prefix, message : `stderr: ${stderr}`})
         if (stderr.toString().indexOf('already processed') !== -1) {
-          stats.compress.skip++
+          Stats.compress.skip++
           message = 'success (already processed)'
           if (config.verbose) {
             Logger.info({ prefix, message })
           }
         } else if (stderr.toString().indexOf('would be larger') !== -1) {
-          stats.compress.skip++
+          Stats.compress.skip++
           message = 'aborted (output file would be larger than input)'
           if (config.verbose) {
             Logger.info({ prefix, message })
           }
         } else {
-          stats.compress.success++
+          Stats.compress.success++
           if (failAlreadyCount) {
             // if previous compression failed and this one worked out
             // remove last failed metric
-            stats.compress.fail--
-            stats.compress.failedPaths.pop()
+            Stats.compress.fail--
+            Stats.compress.failedPaths.pop()
           }
           message = 'success, compressed'
           if (config.verbose) {
@@ -186,12 +185,12 @@ function writeExifDate (prefix, filepath, newDateStr) {
         // Logger.info('exiftool status after writing :', status) // status is undefined :'(
         // resolve('success, updated photo date to : ' + newDateStr)
         // Logger.success({ prefix, message: 'new date writen :)' })
-        stats.dateFix.success++
+        Stats.dateFix.success++
         // if write successful, delete _original file backup created by exif-tool
         unlink(filepath + '_original', (err) => {
           if (err) {
-            stats.fileDeletion.fail++
-            stats.fileDeletion.failedPaths.push(filepath + '_original')
+            Stats.fileDeletion.fail++
+            Stats.fileDeletion.failedPaths.push(filepath + '_original')
             Logger.error(config.verbose ? err : err.message)
           }
         })
@@ -200,8 +199,8 @@ function writeExifDate (prefix, filepath, newDateStr) {
       })
       .catch(err => {
         Logger.error(config.verbose ? err : err.message)
-        stats.dateFix.fail++
-        stats.dateFix.failedPaths.push(filepath)
+        Stats.dateFix.fail++
+        Stats.dateFix.failedPaths.push(filepath)
         reject(new Error('failed at writing date exif'))
       })
   })
@@ -216,26 +215,26 @@ function repairExif (prefix: string, filepath: string): Promise<string> {
       exec(command, (err, stdout, stderr) => {
         if (err) {
           // node couldn't execute the command
-          stats.exifRepair.fail++
-          stats.exifRepair.failedPaths.push(filepath)
+          Stats.exifRepair.fail++
+          Stats.exifRepair.failedPaths.push(filepath)
           reject(err)
         } else {
           // if repair successful, delete _original file backup created by exif-tool
           unlink(filepath + '_original', (error) => {
             if (error) {
               Logger.error(error)
-              stats.fileDeletion.fail++
-              stats.fileDeletion.failedPaths.push(filepath + '_original')
+              Stats.fileDeletion.fail++
+              Stats.fileDeletion.failedPaths.push(filepath + '_original')
             }
           })
-          stats.exifRepair.success++
+          Stats.exifRepair.success++
           message = 'success, all tags fixed !'
           Logger.success({ prefix, message })
           resolve(message)
         }
       })
     } else {
-      stats.exifRepair.skip++
+      Stats.exifRepair.skip++
       message = 'non-windows systems are not yet ready to repair exif'
       Logger.info({ prefix, message })
       resolve('success, ' + message)
@@ -246,7 +245,7 @@ function repairExif (prefix: string, filepath: string): Promise<string> {
 function fixExifDate (prefix: string, photo: string, dir: DirInfos): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!dir.year && !dir.month) {
-      stats.dateFix.skip++
+      Stats.dateFix.skip++
       return resolve('cannot fix exif date without year and month')
     }
     const filepath = getFinalPhotoName(photo)
@@ -258,7 +257,7 @@ function fixExifDate (prefix: string, photo: string, dir: DirInfos): Promise<str
         const month = newDate.getMonth() + 1
         let doRewrite = false
         if (originalDate) {
-          stats.readDate.success++
+          Stats.readDate.success++
           if (config.verbose) {
             Logger.info({ prefix, message: 'original date found : ' + dateToIsoString(originalDate, true).split('T')[0] })
           }
@@ -275,8 +274,8 @@ function fixExifDate (prefix: string, photo: string, dir: DirInfos): Promise<str
             doRewrite = true
           }
         } else {
-          stats.readDate.fail++
-          stats.readDate.failedPaths.push(filepath)
+          Stats.readDate.fail++
+          Stats.readDate.failedPaths.push(filepath)
           doRewrite = true
           if (dir.year !== null) {
             newDate.setFullYear(dir.year)
@@ -299,13 +298,13 @@ function fixExifDate (prefix: string, photo: string, dir: DirInfos): Promise<str
             .then(r => resolve(r.toString()))
             .catch(r => reject(r.toString()))
         } else {
-          stats.dateFix.skip++
+          Stats.dateFix.skip++
           resolve('success, date is good')
         }
       })
       .catch(err => {
-        stats.dateFix.fail++
-        stats.dateFix.failedPaths.push(photo)
+        Stats.dateFix.fail++
+        Stats.dateFix.failedPaths.push(photo)
         Logger.error(config.verbose ? err : err.message)
         reject(new Error('failed at reading exif'))
       })
@@ -345,7 +344,7 @@ async function checkPhotos (photos: PhotoSet, dir: DirInfos): Promise<string> {
     if (!config.verbose) {
       bar.tick()
     }
-    stats.photoProcess.count++
+    Stats.photoProcess.count++
     if (config.verbose) {
       Logger.info('processing photo', num, '(' + name + ')')
     }
@@ -371,7 +370,7 @@ async function checkPhotos (photos: PhotoSet, dir: DirInfos): Promise<string> {
         if (notAlreadyProcessed && notAborted && notAvoidingCompression) {
           return repairExif(prefix, photo)
         } else {
-          stats.exifRepair.skip++
+          Stats.exifRepair.skip++
         }
         return message
       })
@@ -413,8 +412,8 @@ function checkNextDir (): Promise<string> {
   let year = null
   let month = null
   if (!dateMatches || !dateMatches.length || dateMatches.length !== 3) {
-    stats.readDir.fail++
-    stats.readDir.failedPaths.push(dir)
+    Stats.readDir.fail++
+    Stats.readDir.failedPaths.push(dir)
     if (config.verbose) {
       Logger.warn('failed at detecting year & month')
     } else {
@@ -428,8 +427,8 @@ function checkNextDir (): Promise<string> {
     if (year < 1000 || year > 3000) {
       Logger.error('detected year out of range : "' + year + '"')
       failed = true
-      stats.readDir.fail++
-      stats.readDir.failedPaths.push(dir)
+      Stats.readDir.fail++
+      Stats.readDir.failedPaths.push(dir)
     } else if (config.verbose) {
       Logger.info('detected year "' + year + '"')
     }
@@ -440,8 +439,8 @@ function checkNextDir (): Promise<string> {
         Logger.error('detected month out of range : "' + month + '"')
         // avoiding duplicate records
         if (!failed) {
-          stats.readDir.fail++
-          stats.readDir.failedPaths.push(dir)
+          Stats.readDir.fail++
+          Stats.readDir.failedPaths.push(dir)
         }
       } else if (config.verbose) {
         Logger.info('detected month "' + month + '"')
@@ -461,7 +460,7 @@ function checkNextDir (): Promise<string> {
       if (config.verbose) {
         Logger.info(status)
       }
-      if (config.processOne && stats.photoProcess.count > 0) {
+      if (config.processOne && Stats.photoProcess.count > 0) {
         return 'success, processed one photo only'
       }
       return checkNextDir()
@@ -485,7 +484,7 @@ function startProcess () {
     .then(() => checkNextDir())
     .then(status => config.verbose ? Logger.info(status) : true)
     .catch((err) => Logger.error(config.verbose ? err : err.message))
-    .then(() => stats.showMetrics())
+    .then(() => Stats.stop())
     .catch((err) => Logger.error(config.verbose ? err : err.message))
     .then(() => killExifTool())
     .catch((err) => Logger.error(config.verbose ? err : err.message))
@@ -494,7 +493,7 @@ function startProcess () {
 
 function start () {
   Logger.start('Photo Archiver (' + process.platform + ')')
-  // Logger.info(config)
+  Stats.start()
   if (config.verbose) {
     Logger.info('init with config :')
     Logger.info(config)

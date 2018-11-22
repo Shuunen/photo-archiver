@@ -7,9 +7,10 @@ export default class Utils {
     return path.replace(regex, subst)
   }
 
-  static readableDirs (directories, path: string) {
+  static readableDirs (directories, redundantPath = '') {
+    const toRemove = redundantPath.length ? this.readablePath(redundantPath) : ''
     return directories.map(dir => {
-      return this.readablePath(dir).replace(this.readablePath(path), '')
+      return this.readablePath(dir).replace(toRemove, '')
     }).join(chalk.gray(' & '))
   }
 }

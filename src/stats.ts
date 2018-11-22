@@ -4,30 +4,35 @@ import chalk from 'chalk'
 import { ColumnConfig, table, TableUserConfig } from 'table' // eslint-disable-line no-unused-vars
 import { getTimestampMs } from 'shuutils'
 import Logger from './logger'
+import Utils from './utils'
 
 class Stat {
-  fail: 0
-  failedPaths: string[]
-  skip: 0
-  success: 0
-  count: 0
+  fail: number = 0
+  failedPaths: string[] = []
+  skip: number = 0
+  success: number = 0
+  count: number = 0
 }
 
 export default class Stats {
-  startTime: number
-  compress: Stat
-  dateFix: Stat
-  exifRepair: Stat
-  fileDeletion: Stat
-  photoProcess: Stat
-  readDate: Stat
-  readDir: Stat
+  static startTime: number
+  static compress: Stat = new Stat()
+  static dateFix: Stat = new Stat()
+  static exifRepair: Stat = new Stat()
+  static fileDeletion: Stat = new Stat()
+  static photoProcess: Stat = new Stat()
+  static readDate: Stat = new Stat()
+  static readDir: Stat = new Stat()
 
-  constructor () {
+  public static start () {
     this.startTime = getTimestampMs()
   }
 
-  getMetricRow (label, data) {
+  public static stop () {
+    this.showMetrics()
+  }
+
+  private static getMetricRow (label, data) {
     const row = [label]
     const spacer = '  '
     if (!data.success) {
@@ -48,13 +53,13 @@ export default class Stats {
     if (!data.failedPaths) {
       row.push(spacer)
     } else {
-      row.push(data.failedPaths)
+      row.push(Utils.readableDirs(data.failedPaths))
       // row.push('bla bla bla')
     }
     return row
   }
 
-  showMetricsTable () {
+  private static showMetricsTable () {
     const data = [
       ['', 'Success', ' Skip', ' Fail', 'Fail photo and dir paths'],
       this.getMetricRow('Compressed', this.compress),
@@ -93,7 +98,7 @@ export default class Stats {
     console.log(table(data, opts))
   }
 
-  showMetrics () {
+  private static showMetrics () {
     const timeElapsed: number = getTimestampMs() - this.startTime
     // const timeReadable: string = prettyMs(timeElapsed, { verbose: true })
     const photoProcessed: number = this.photoProcess.count
