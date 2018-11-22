@@ -1,4 +1,5 @@
 import * as minimist from 'minimist' // eslint-disable-line no-unused-vars
+import * as inquirer from 'inquirer'
 const currentPath = process.cwd()
 
 export const defaults = {
@@ -12,7 +13,28 @@ export const defaults = {
   verbose: false
 }
 
-export default class Config {
+const questions = [
+  {
+    default: defaults.path,
+    message: 'Path to photos ?',
+    name: 'path',
+    type: 'input'
+  },
+  {
+    default: defaults.overwrite,
+    message: 'Overwrite photos ?',
+    name: 'overwrite',
+    type: 'confirm'
+  }
+]
+
+// if process called with --plop --data=2
+// argv will looks like ['node', 'C:\path\to\photo-archiver', '--plop', '--data=2']
+// and args like ['--plop', '--data=2']
+const args = process.argv.slice(2)
+const data = minimist(args, { default: defaults })
+
+class Config {
   compress: boolean
   forceSsim: boolean
   marker: string // my-photo.jpg => my-photo-archived.jpg
@@ -22,14 +44,28 @@ export default class Config {
   questions: boolean
   verbose: boolean
 
-  // if process called with --plop --data=2
-  // args will looks like ['--plop', '--data=2']
-  constructor (args = []) {
-    console.log('args', args)
-    const data = minimist(args, { default: defaults })
+  constructor (data) {
+    // console.log('Config : in constructor')
+    this.set(data)
+  }
+
+  init () {
+    if (this.questions) {
+      return inquirer.prompt(questions).then(answers => {
+        this.set({ ...data, ...answers })
+        return 'Config augmented via questions'
+      })
+    }
+    return Promise.resolve('Config with defaults')
+  }
+
+  set (data) {
     Object.keys(data).forEach(key => {
       this[key] = data[key]
       // console.log('setting "' + key + '" with "' + data[key] + '"')
     })
   }
 }
+
+const instance = new Config(data)
+export default instance

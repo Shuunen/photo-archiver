@@ -1,4 +1,5 @@
 import chalk from 'chalk'
+import Config from './config'
 
 export default class Utils {
   static readablePath (path) {
@@ -7,10 +8,9 @@ export default class Utils {
     return path.replace(regex, subst)
   }
 
-  static readableDirs (directories, redundantPath = '') {
-    const toRemove = redundantPath.length ? this.readablePath(redundantPath) : ''
+  static readableDirs (directories, redundantPath = Config.path) {
     return directories.map(dir => {
-      return this.readablePath(dir).replace(toRemove, '')
+      return this.readablePath(dir).replace(redundantPath, '')
     }).join(chalk.gray(' & '))
   }
 }
