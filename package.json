@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "chalk": "2.4.1",
-    "exiftool-vendored": "7.1.0",
+    "exiftool-vendored": "7.2.0",
     "globby": "8.0.1",
     "inquirer": "6.2.0",
     "minimist": "1.2.0",

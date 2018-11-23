@@ -1634,27 +1634,27 @@ execa@^0.7.0:
     signal-exit "^3.0.0"
     strip-eof "^1.0.0"
 
-exiftool-vendored.exe@11.15.0:
-  version "11.15.0"
-  resolved "https://registry.yarnpkg.com/exiftool-vendored.exe/-/exiftool-vendored.exe-11.15.0.tgz#dd069cdb1e33276564f81eb7e92289be2facb818"
-  integrity sha512-tPCBIXXnTkK43YFhyNTP9QbTYfe2pRkJjk9F5S/V5k8N46WJk8s7jTGr8vVGTlSmZEuslNBo4vH5oc5igQEXoA==
+exiftool-vendored.exe@11.20.0:
+  version "11.20.0"
+  resolved "https://registry.yarnpkg.com/exiftool-vendored.exe/-/exiftool-vendored.exe-11.20.0.tgz#e468de7bb08b68efa89a715344e411c9c208f98b"
+  integrity sha512-hJyd7iitMjoDIave59c9TPlgi3bEgJioIzXWOjUOFMHEtA5mjDUczktDWwhFVGG6Z1Vxpi8vpFG3asx7QcgIdg==
 
-exiftool-vendored.pl@11.15.0:
-  version "11.15.0"
-  resolved "https://registry.yarnpkg.com/exiftool-vendored.pl/-/exiftool-vendored.pl-11.15.0.tgz#2835ed10db7485f374afdfe132922c1d6e28dc0d"
-  integrity sha512-uSENFIfNJaGfys15ewYRZ1eWEk5K7cEZOieOAmKOJp3JnSP1vILCfkq2I1B4ht5r35z28A24uPa9c8hFbGO/yA==
+exiftool-vendored.pl@11.20.0:
+  version "11.20.0"
+  resolved "https://registry.yarnpkg.com/exiftool-vendored.pl/-/exiftool-vendored.pl-11.20.0.tgz#b1fbaa998a1ed2ced792d2efd9a8a4a5382b924d"
+  integrity sha512-rHbkgZYfJ4eI8xlkJ9xHVOuFrNQQPsR4Jv4NXus7AbOp9nUBV1xiTkIxM1AM3KAiccuWSaTcm2SDZpP0goRLZQ==
 
-exiftool-vendored@7.1.0:
-  version "7.1.0"
-  resolved "https://registry.yarnpkg.com/exiftool-vendored/-/exiftool-vendored-7.1.0.tgz#8c3069398fe1e55b5d4b0171caa5632237bd1d5a"
-  integrity sha512-gtrZ4+rsBXIw+b6yCaqbA+Y7Txtx/2AAFKFZGAJHWG9ryhA534lpBL7bsrTeNdJatqd04TABP+9mAQLnYd2wyg==
+exiftool-vendored@7.2.0:
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/exiftool-vendored/-/exiftool-vendored-7.2.0.tgz#1b87b9bd802dded951a44ee4d6350e0e67e57641"
+  integrity sha512-XwwfcywSQi/Vsa0o4RWugGvMyHm5v3i77LDUIfeLihDdwT9D4dZkNVgyGUu64bERM/LIHeSPqEdf+F2668szUQ==
   dependencies:
     batch-cluster "^5.0.0"
-    luxon "^1.4.4"
+    luxon "^1.7.1"
     tz-lookup "^6.1.8"
   optionalDependencies:
-    exiftool-vendored.exe "11.15.0"
-    exiftool-vendored.pl "11.15.0"
+    exiftool-vendored.exe "11.20.0"
+    exiftool-vendored.pl "11.20.0"
 
 exit@^0.1.2:
   version "0.1.2"
@@ -3329,10 +3329,10 @@ lru-cache@^4.0.1:
     pseudomap "^1.0.2"
     yallist "^2.1.2"
 
-luxon@^1.4.4:
-  version "1.4.5"
-  resolved "https://registry.yarnpkg.com/luxon/-/luxon-1.4.5.tgz#88f6d4901f61bcff26cfbb66b54f464c9f759b82"
-  integrity sha512-l2zRBzQt47/OLD//V5odz5JFIvReS+7dmt0KtP6R+jMymki1XuU+hA8loyUvwLj6714HD79cokPtOF2TO8nl5w==
+luxon@^1.7.1:
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/luxon/-/luxon-1.8.0.tgz#cfc807c5a26e55049383c9c512d57a5dda31e469"
+  integrity sha512-F742cYUYB7X+LXY3cIn6THZUBqRBjeAvF+CWE2i3+eKcv2bzsCsnRsBYL8Qrqzp1dfs6HsVcSjfKt2RcrtUElw==
 
 make-dir@^1.0.0:
   version "1.3.0"
