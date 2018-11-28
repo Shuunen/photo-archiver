@@ -29,7 +29,7 @@
     "@types/chalk": "2.2.0",
     "@types/globby": "8.0.0",
     "@types/inquirer": "0.0.43",
-    "@types/jest": "23.3.9",
+    "@types/jest": "23.3.10",
     "@types/minimist": "1.2.0",
     "@types/node": "10.12.10",
     "@types/pretty-ms": "3.2.0",
