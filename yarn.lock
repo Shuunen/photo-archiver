@@ -699,10 +699,10 @@ base@^0.11.1:
     mixin-deep "^1.2.0"
     pascalcase "^0.1.1"
 
-batch-cluster@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/batch-cluster/-/batch-cluster-5.0.0.tgz#00cf17520ebd30158e3c356cc565da19950d4365"
-  integrity sha512-EmaBbO3DAeiQOpVnO6hLbYlUnc6iCqYG58yReU9zi21dVFiiEwU/DkA6gvlF5zjUxA87TpMZ+Bjc/WxCUSOEgg==
+batch-cluster@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/batch-cluster/-/batch-cluster-5.0.1.tgz#9586107b0b0adbd7d72a46b24d2d0720eee685a9"
+  integrity sha512-mYyzNATTYC1M0FS8uNVz6OK34AqClODVPENbTrw+eh+n1Tf8xuSVHJvQFUQ00QmBp9Crk73lJYXqemLLEr1vow==
 
 bcrypt-pbkdf@^1.0.0:
   version "1.0.2"
@@ -1635,13 +1635,13 @@ exiftool-vendored.pl@11.20.0:
   resolved "https://registry.yarnpkg.com/exiftool-vendored.pl/-/exiftool-vendored.pl-11.20.0.tgz#b1fbaa998a1ed2ced792d2efd9a8a4a5382b924d"
   integrity sha512-rHbkgZYfJ4eI8xlkJ9xHVOuFrNQQPsR4Jv4NXus7AbOp9nUBV1xiTkIxM1AM3KAiccuWSaTcm2SDZpP0goRLZQ==
 
-exiftool-vendored@7.2.0:
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/exiftool-vendored/-/exiftool-vendored-7.2.0.tgz#1b87b9bd802dded951a44ee4d6350e0e67e57641"
-  integrity sha512-XwwfcywSQi/Vsa0o4RWugGvMyHm5v3i77LDUIfeLihDdwT9D4dZkNVgyGUu64bERM/LIHeSPqEdf+F2668szUQ==
+exiftool-vendored@7.3.0:
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/exiftool-vendored/-/exiftool-vendored-7.3.0.tgz#b52037389e996da9e9577ca0972d5474828353a1"
+  integrity sha512-R9/JlQqWCZtLZFW9roGZApgswOiLAoo0bIaGRsuVchkAfuN7m/g4FJ7dauzpBZwsaUKZ7j88nwqC+MZddGSYkQ==
   dependencies:
-    batch-cluster "^5.0.0"
-    luxon "^1.7.1"
+    batch-cluster "^5.0.1"
+    luxon "^1.8.1"
     tz-lookup "^6.1.8"
   optionalDependencies:
     exiftool-vendored.exe "11.20.0"
@@ -3310,10 +3310,10 @@ lru-cache@^4.0.1:
     pseudomap "^1.0.2"
     yallist "^2.1.2"
 
-luxon@^1.7.1:
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/luxon/-/luxon-1.8.0.tgz#cfc807c5a26e55049383c9c512d57a5dda31e469"
-  integrity sha512-F742cYUYB7X+LXY3cIn6THZUBqRBjeAvF+CWE2i3+eKcv2bzsCsnRsBYL8Qrqzp1dfs6HsVcSjfKt2RcrtUElw==
+luxon@^1.8.1:
+  version "1.8.2"
+  resolved "https://registry.yarnpkg.com/luxon/-/luxon-1.8.2.tgz#32ca2be3b3f0fcddd607dc5584ff106107fecade"
+  integrity sha512-TPShotrkafGXEksxvEagZ1peYb9gE3ADppq8IPWG6wqYS/4k9ucRUXipBHy/PrMIfUPxy/llfsQXRvQmOXmVcA==
 
 make-dir@^1.0.0:
   version "1.3.0"
