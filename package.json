@@ -16,7 +16,7 @@
     "chalk": "2.4.1",
     "exiftool-vendored": "7.3.0",
     "globby": "8.0.1",
-    "inquirer": "6.2.0",
+    "inquirer": "6.2.1",
     "minimist": "1.2.0",
     "pretty-ms": "4.0.0",
     "progress": "2.0.1",
