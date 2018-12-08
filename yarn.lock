@@ -1630,27 +1630,27 @@ execa@^0.7.0:
     signal-exit "^3.0.0"
     strip-eof "^1.0.0"
 
-exiftool-vendored.exe@11.20.0:
-  version "11.20.0"
-  resolved "https://registry.yarnpkg.com/exiftool-vendored.exe/-/exiftool-vendored.exe-11.20.0.tgz#e468de7bb08b68efa89a715344e411c9c208f98b"
-  integrity sha512-hJyd7iitMjoDIave59c9TPlgi3bEgJioIzXWOjUOFMHEtA5mjDUczktDWwhFVGG6Z1Vxpi8vpFG3asx7QcgIdg==
+exiftool-vendored.exe@11.21.0:
+  version "11.21.0"
+  resolved "https://registry.yarnpkg.com/exiftool-vendored.exe/-/exiftool-vendored.exe-11.21.0.tgz#623223aba3aef9babc6732732cf790a2b5273b1d"
+  integrity sha512-gLGy2DUln/vhnFY8NDx2ALc/Gz1hHT/Svgkc44ewF+3EGFXE3zD+6gW3TWfhJk/7qEVppLJdc6BxX8ssD//Ztw==
 
-exiftool-vendored.pl@11.20.0:
-  version "11.20.0"
-  resolved "https://registry.yarnpkg.com/exiftool-vendored.pl/-/exiftool-vendored.pl-11.20.0.tgz#b1fbaa998a1ed2ced792d2efd9a8a4a5382b924d"
-  integrity sha512-rHbkgZYfJ4eI8xlkJ9xHVOuFrNQQPsR4Jv4NXus7AbOp9nUBV1xiTkIxM1AM3KAiccuWSaTcm2SDZpP0goRLZQ==
+exiftool-vendored.pl@11.21.0:
+  version "11.21.0"
+  resolved "https://registry.yarnpkg.com/exiftool-vendored.pl/-/exiftool-vendored.pl-11.21.0.tgz#c0a385e1bfd72766556570009e09d4acdc7e652f"
+  integrity sha512-Z3lOoDnSNcOtJaZah5V4OyGK24l1SqMdAxmJ3nls51l8M1dSQYX5LyO1YWtNK2NbO+bC64deMULZB3BPltkPiA==
 
-exiftool-vendored@7.4.0:
-  version "7.4.0"
-  resolved "https://registry.yarnpkg.com/exiftool-vendored/-/exiftool-vendored-7.4.0.tgz#cf14ddfff27ea9c8a03525327f054c7e88b2c4c8"
-  integrity sha512-Bfza8aspH1QQAGhfe1/eTgaoRGhYmJu77JHbUBDjwtk1RS+4Kuh5C8ONXPCqOQ8ow0dpd8FUnvZDEIE86siReg==
+exiftool-vendored@7.5.0:
+  version "7.5.0"
+  resolved "https://registry.yarnpkg.com/exiftool-vendored/-/exiftool-vendored-7.5.0.tgz#36d9134e50b450c06c8e196257da2b7ad63a5b43"
+  integrity sha512-APSeQlS4JLcu9OLtuAPILMLmGXcCUwDBCF0wHtV8hrzM01QdCIy3mUuf9Yye0QOWmIUsF8X2ZYrOAyXlRFOZsg==
   dependencies:
     batch-cluster "^5.0.1"
     luxon "^1.8.2"
     tz-lookup "^6.1.8"
   optionalDependencies:
-    exiftool-vendored.exe "11.20.0"
-    exiftool-vendored.pl "11.20.0"
+    exiftool-vendored.exe "11.21.0"
+    exiftool-vendored.pl "11.21.0"
 
 exit@^0.1.2:
   version "0.1.2"
