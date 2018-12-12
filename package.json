@@ -33,7 +33,7 @@
     "@types/minimist": "1.2.0",
     "@types/node": "10.12.12",
     "@types/pretty-ms": "3.2.1",
-    "@types/progress": "2.0.1",
+    "@types/progress": "2.0.2",
     "@types/signale": "1.2.0",
     "@types/table": "4.0.5",
     "eslint-plugin-typescript": "0.14.0",
