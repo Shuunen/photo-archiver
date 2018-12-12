@@ -93,10 +93,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.12.12.tgz#e15a9d034d9210f00320ef718a50c4a799417c47"
   integrity sha512-Pr+6JRiKkfsFvmU/LK68oBRCQeEg36TyAbPhc2xpez24OOZZCuoIhWGTd39VZy6nGafSbxzGouFPTFD/rR1A0A==
 
-"@types/pretty-ms@3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@types/pretty-ms/-/pretty-ms-3.2.0.tgz#cdd35f7edac2310bbe2af86f5244625db7a101b1"
-  integrity sha512-jF8PYR5Nm2w148Icj+Xf4CcVO+YrrpVyRSZPmSG67W2H3WrAAET7jP22txHpk6rnwPGJ8asW7syiyQTPcWWPAQ==
+"@types/pretty-ms@3.2.1":
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/@types/pretty-ms/-/pretty-ms-3.2.1.tgz#2077fc8fa78df23a4bc5918e9b0a21cf9aa64543"
+  integrity sha512-cJdGYrTzhzWNm90h2BbCz+Us3EfJf6pajhpomXQQmyJQ5LQYdJwEZOY8a268nYGr8g57I98Zk8qBa449moHruQ==
 
 "@types/progress@2.0.1":
   version "2.0.1"
