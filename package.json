@@ -26,7 +26,6 @@
     "typescript": "3.2.2"
   },
   "devDependencies": {
-    "@types/chalk": "2.2.0",
     "@types/globby": "8.0.0",
     "@types/inquirer": "0.0.43",
     "@types/jest": "23.3.10",
