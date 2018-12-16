@@ -9,7 +9,7 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "nodemon",
-    "lint": "standard --fix {src,test}/**/*.ts",
+    "lint": "standard --fix {src,tests}/**/*.ts",
     "test": "jest"
   },
   "dependencies": {

@@ -431,7 +431,8 @@ function killExifTool () {
 }
 
 function startProcess () {
-  Logger.start('Photo Archiver (' + process.platform + ')')
+  const app = 'Photo Archiver (' + process.platform + ')'
+  Logger.start(app)
   Stats.start()
   Config.init()
     .then(() => getDirs())
@@ -442,7 +443,7 @@ function startProcess () {
     .catch(err => Logger.error(err))
     .then(() => killExifTool())
     .catch(err => Logger.error(err))
-    .then(() => Logger.complete('Photo Archiver'))
+    .then(() => Logger.complete(app))
 }
 
 startProcess()

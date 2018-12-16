@@ -7,7 +7,7 @@ export const defaults = {
   forceSsim: false,
   marker: '-archived', // my-photo.jpg => my-photo-archived.jpg
   overwrite: true, // true : will replace original photos / false : will use config marker and create new files
-  path: currentPath + '/test',
+  path: currentPath + '/tests',
   processOne: false,
   questions: true,
   verbose: false
