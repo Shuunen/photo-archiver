@@ -1545,10 +1545,10 @@ exiftool-vendored.pl@11.24.0:
   resolved "https://registry.yarnpkg.com/exiftool-vendored.pl/-/exiftool-vendored.pl-11.24.0.tgz#26ea1ff8661015888be572e300ad2e63b4773678"
   integrity sha512-LEoKO28SJxvDbbHwG5Iu/AagTFESfxKZl4RHAfk6T8jAQObUbS0XJLQTglfRoDXNgx3RHcI6rzYsk/c7mUU/rg==
 
-exiftool-vendored@7.6.0:
-  version "7.6.0"
-  resolved "https://registry.yarnpkg.com/exiftool-vendored/-/exiftool-vendored-7.6.0.tgz#03a712dd02531006a32908b951242bd526ed4179"
-  integrity sha512-ivz8OJ5ZCFjhziThALXmoqP2pQxIYgKflsxf1y5aZ/KNb8ym15bIsR80HSfBZNpztif1JOxT16Aaryj1BfzzVA==
+exiftool-vendored@7.6.1:
+  version "7.6.1"
+  resolved "https://registry.yarnpkg.com/exiftool-vendored/-/exiftool-vendored-7.6.1.tgz#aa5da10780c94c4ede87c4c612173d343c927629"
+  integrity sha512-Y8mtnV77yfWLwsi6vSwjRITrjukya/Q5rGltGOzKRdq6BLn2iF1JfS2RmA3pT8S/mHIMTJxH14b/WbCK/pCgEw==
   dependencies:
     batch-cluster "^5.0.1"
     luxon "^1.10.0"
