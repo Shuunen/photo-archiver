@@ -30,7 +30,7 @@
     "@types/inquirer": "0.0.44",
     "@types/jest": "23.3.14",
     "@types/minimist": "1.2.0",
-    "@types/node": "10.12.30",
+    "@types/node": "10.14.0",
     "@types/pretty-ms": "4.0.0",
     "@types/progress": "2.0.3",
     "@types/signale": "1.2.1",
