@@ -1,4 +1,6 @@
 # Photo Archiver
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FShuunen%2Fphoto-archiver.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FShuunen%2Fphoto-archiver?ref=badge_shield)
+
 
 My personal photo archiver, check folder structure, compress images, fix exif is needed...
 
@@ -32,3 +34,5 @@ Then you'll be guided :)
 * [Table](https://github.com/gajus/table) © 2016 Gajus Kuizinas
 
 Big thumbs up for all of them <3
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FShuunen%2Fphoto-archiver.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FShuunen%2Fphoto-archiver?ref=badge_large)
