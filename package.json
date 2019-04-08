@@ -37,7 +37,7 @@
     "@types/table": "4.0.5",
     "eslint-plugin-typescript": "0.14.0",
     "jest": "23.6.0",
-    "nodemon": "1.18.10",
+    "nodemon": "1.18.11",
     "standard": "12.0.1",
     "ts-jest": "23.10.5",
     "ts-node": "7.0.1",
