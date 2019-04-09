@@ -23,7 +23,7 @@
     "shuutils": "3.4.0",
     "signale": "1.4.0",
     "table": "5.2.3",
-    "typescript": "3.4.2"
+    "typescript": "3.4.3"
   },
   "devDependencies": {
     "@types/globby": "8.0.0",
