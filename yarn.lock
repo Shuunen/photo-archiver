@@ -4688,10 +4688,10 @@ symbol-tree@^3.2.2:
   resolved "https://registry.yarnpkg.com/symbol-tree/-/symbol-tree-3.2.2.tgz#ae27db38f660a7ae2e1c3b7d1bc290819b8519e6"
   integrity sha1-rifbOPZgp64uHDt9G8KQgZuFGeY=
 
-table@5.2.3:
-  version "5.2.3"
-  resolved "https://registry.yarnpkg.com/table/-/table-5.2.3.tgz#cde0cc6eb06751c009efab27e8c820ca5b67b7f2"
-  integrity sha512-N2RsDAMvDLvYwFcwbPyF3VmVSSkuF+G1e+8inhBLtHpvwXGw4QRPEZhihQNeEN0i1up6/f6ObCJXNdlRG3YVyQ==
+table@5.3.0:
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/table/-/table-5.3.0.tgz#8a2c3354dc87312328c68732039b38b6a41c86c9"
+  integrity sha512-6V2qlZHIbbZQGzoP3Ghcj/IQDPhBvQYjZE4W4JEyFMkbzHziIzG6jxmAD87BZ1ZXgwPwgu3MzvCUGMOFRN7wlw==
   dependencies:
     ajv "^6.9.1"
     lodash "^4.17.11"
