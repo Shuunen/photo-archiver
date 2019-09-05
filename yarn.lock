@@ -675,10 +675,10 @@ base@^0.11.1:
     mixin-deep "^1.2.0"
     pascalcase "^0.1.1"
 
-batch-cluster@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/batch-cluster/-/batch-cluster-5.0.1.tgz#9586107b0b0adbd7d72a46b24d2d0720eee685a9"
-  integrity sha512-mYyzNATTYC1M0FS8uNVz6OK34AqClODVPENbTrw+eh+n1Tf8xuSVHJvQFUQ00QmBp9Crk73lJYXqemLLEr1vow==
+batch-cluster@^5.6.8:
+  version "5.6.8"
+  resolved "https://registry.yarnpkg.com/batch-cluster/-/batch-cluster-5.6.8.tgz#6ef67b348281350d8a9bb77ebc255ac4853da5f7"
+  integrity sha512-kPG8n+4H4Ha5mR9fDJaIFE2+3IvnC80FezRtYMJ8jxe+8MlQNt54QlgdUhDu76PFUBwJVdvy5xPUr9oBvoVW/w==
 
 bcrypt-pbkdf@^1.0.0:
   version "1.0.2"
@@ -1544,27 +1544,27 @@ execa@^0.7.0:
     signal-exit "^3.0.0"
     strip-eof "^1.0.0"
 
-exiftool-vendored.exe@11.24.0:
-  version "11.24.0"
-  resolved "https://registry.yarnpkg.com/exiftool-vendored.exe/-/exiftool-vendored.exe-11.24.0.tgz#5f4f1ea52a43f0056d19cc6207cfa216405a37dc"
-  integrity sha512-HWFfM7N5Oqb9ZulptuyxpQDvPNQ/K/OFSQyufaEyYhXC1jwJ2thmBJ/ESRR+C6rZ+rlIiMiyvXsC0OfA4L5OGw==
+exiftool-vendored.exe@11.65.0:
+  version "11.65.0"
+  resolved "https://registry.yarnpkg.com/exiftool-vendored.exe/-/exiftool-vendored.exe-11.65.0.tgz#4a3df5b3eda086b308130cfe6c0a9e538c3cc4a7"
+  integrity sha512-3hZeQIn6cKqSLvs4Bnx9WRGs/6LbXiGo5PrELnkE8G/ZURA2lf6R9pBAA9xbXaVau/BzmPdJMg7UsZjC+1UhGA==
 
-exiftool-vendored.pl@11.24.0:
-  version "11.24.0"
-  resolved "https://registry.yarnpkg.com/exiftool-vendored.pl/-/exiftool-vendored.pl-11.24.0.tgz#26ea1ff8661015888be572e300ad2e63b4773678"
-  integrity sha512-LEoKO28SJxvDbbHwG5Iu/AagTFESfxKZl4RHAfk6T8jAQObUbS0XJLQTglfRoDXNgx3RHcI6rzYsk/c7mUU/rg==
+exiftool-vendored.pl@11.65.0:
+  version "11.65.0"
+  resolved "https://registry.yarnpkg.com/exiftool-vendored.pl/-/exiftool-vendored.pl-11.65.0.tgz#df82220e2c2b8cdcb6289fe15ad9707f2068c0fd"
+  integrity sha512-PNxEvF/EuqbMZQPG4ioNLSDhDWo2nDrALuDYlpReRXd2oBnVytmFzBO4Cjyb3E7YZCvo3lWi6xursDAjCpSDJg==
 
-exiftool-vendored@7.6.1:
-  version "7.6.1"
-  resolved "https://registry.yarnpkg.com/exiftool-vendored/-/exiftool-vendored-7.6.1.tgz#aa5da10780c94c4ede87c4c612173d343c927629"
-  integrity sha512-Y8mtnV77yfWLwsi6vSwjRITrjukya/Q5rGltGOzKRdq6BLn2iF1JfS2RmA3pT8S/mHIMTJxH14b/WbCK/pCgEw==
+exiftool-vendored@8.22.0:
+  version "8.22.0"
+  resolved "https://registry.yarnpkg.com/exiftool-vendored/-/exiftool-vendored-8.22.0.tgz#7b430801e1529a5b9224a92a5a084c4731a2de22"
+  integrity sha512-RuVXHKMQ+fpJNqXo6qfg11wVN56V808UlV6dDyhQsONDtjVD1PR58A7KwEtELlTfsve0bhajWy86EoVvbN6H/w==
   dependencies:
-    batch-cluster "^5.0.1"
-    luxon "^1.10.0"
-    tz-lookup "^6.1.8"
+    batch-cluster "^5.6.8"
+    luxon "^1.17.2"
+    tz-lookup "^6.1.24"
   optionalDependencies:
-    exiftool-vendored.exe "11.24.0"
-    exiftool-vendored.pl "11.24.0"
+    exiftool-vendored.exe "11.65.0"
+    exiftool-vendored.pl "11.65.0"
 
 exit@^0.1.2:
   version "0.1.2"
@@ -3202,10 +3202,10 @@ lru-cache@^4.0.1:
     pseudomap "^1.0.2"
     yallist "^2.1.2"
 
-luxon@^1.10.0:
-  version "1.10.0"
-  resolved "https://registry.yarnpkg.com/luxon/-/luxon-1.10.0.tgz#335b55e2fed50e09f869aee828897a3f67c7044e"
-  integrity sha512-ry3GKh//v3isD6oJN5pFWmdh+3GiScwv9q8VgG6fZ2j1guGOol2vVVdo4GBAWCrcq5RHOqSeipqHBnOu/u024Q==
+luxon@^1.17.2:
+  version "1.17.2"
+  resolved "https://registry.yarnpkg.com/luxon/-/luxon-1.17.2.tgz#95189c450341cfddf5f826ef8c32b5b022943fd5"
+  integrity sha512-qELKtIj3HD41N+MvgoxArk8DZGUb4Gpiijs91oi+ZmKJzRlxY6CoyTwNoUwnogCVs4p8HuxVJDik9JbnYgrCng==
 
 make-dir@^1.0.0:
   version "1.3.0"
@@ -4905,10 +4905,10 @@ typescript@3.4.5:
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.4.5.tgz#2d2618d10bb566572b8d7aad5180d84257d70a99"
   integrity sha512-YycBxUb49UUhdNMU5aJ7z5Ej2XGmaIBL0x34vZ82fn3hGvD+bgrMrVDpatgz2f7YxUMJxMkbWxJZeAvDxVe7Vw==
 
-tz-lookup@^6.1.8:
-  version "6.1.8"
-  resolved "https://registry.yarnpkg.com/tz-lookup/-/tz-lookup-6.1.8.tgz#baa4daff2e027c3e3545d08743aa933b379bb3e5"
-  integrity sha512-NtPsE0evoRblsb8gSgAhK3UWblQDDcyzjwNgfBF3+H4gPMqhPlXIu8sIomjAc+4ErEpYolgnfht3zhm4KVEFgA==
+tz-lookup@^6.1.24:
+  version "6.1.24"
+  resolved "https://registry.yarnpkg.com/tz-lookup/-/tz-lookup-6.1.24.tgz#b23708f27c924d28cf00d40d834a3ccf8bcd0957"
+  integrity sha512-HdNjpzDk9nXTbHMGTzN7Dr0sueSudjOhYjMCKkXCUMZyrYMgERPcoRpZSAhzTv30vQMvMe/Z5fYOu95xWt6nLA==
 
 uglify-js@^3.1.4:
   version "3.4.9"
