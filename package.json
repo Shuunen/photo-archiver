@@ -18,7 +18,7 @@
     "globby": "8.0.2",
     "inquirer": "6.2.2",
     "minimist": "1.2.0",
-    "pretty-ms": "4.0.0",
+    "pretty-ms": "5.1.0",
     "progress": "2.0.3",
     "shuutils": "3.4.0",
     "signale": "1.4.0",
