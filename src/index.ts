@@ -28,9 +28,10 @@ function getDirs (): Promise<string> {
     if (!Config.path) {
       reject(new Error('No path found in config'))
     }
-    getDirectories(Config.path).map((dir) => {
+    const path = Config.path || '.'
+    getDirectories(path).map((dir) => {
       // dir will be successively 2013, 2014,...
-      const subDir = join(Config.path, dir)
+      const subDir = join(path, dir)
       Logger.info('dir', dir)
       Logger.info('subDir', subDir)
       if (dir.length === 4) {
@@ -42,7 +43,7 @@ function getDirs (): Promise<string> {
     })
     // if no sub-dir, just process input dir
     if (!dirs.length) {
-      dirs.push(Config.path)
+      dirs.push(path)
     }
     Logger.info('found dir(s)', Utils.readableDirs(dirs, Config.path))
     resolve('success')
@@ -128,7 +129,7 @@ function getDateFromTags (prefix: string, tags: ExifTool.Tags): Date | null {
   Logger.info('  DateTimeUTC :', data.DateTimeUTC)
   Logger.info('  DateTimeOriginal :', data.DateTimeOriginal)
   */
-  const date = (data.CreateDate || tags.ModifyDate || tags.DateTimeOriginal || tags.DateTimeUTC)
+  const date = (data.CreateDate || tags.ModifyDate || tags.DateTimeOriginal)
   if (date) {
     const month = zeroIfNeeded(date.month)
     const day = zeroIfNeeded(date.day)
@@ -433,7 +434,7 @@ function checkNextDir (): Promise<string> {
   const exclude = '!' + join(dir, '**/*' + Config.marker + '.(jpg|jpeg)')
   const rules = [include, exclude]
   // Logger.info('search files with rules', rules)
-  return globby(rules, { nocase: true })
+  return globby(rules)
     .then((photos: PhotoSet) => checkPhotos(photos, oDir))
     .then(status => {
       Logger.info(status)

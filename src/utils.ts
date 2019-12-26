@@ -16,7 +16,10 @@ class Utils {
 
   readableDirs (directories: string[], redundantPath = Config.path): string {
     return directories.map(dir => {
-      return this.readablePath(dir).replace(redundantPath, '')
+      if (redundantPath) {
+        return this.readablePath(dir).replace(redundantPath, '')
+      }
+      return this.readablePath(dir)
     }).join(chalk.gray(' & '))
   }
 

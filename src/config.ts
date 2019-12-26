@@ -3,16 +3,16 @@ import * as minimist from 'minimist'
 const currentPath = process.cwd()
 
 interface ConfigOptions {
-  compress: boolean
-  forceSsim: boolean
-  marker: string
-  overwrite: boolean
-  path: string
-  processOne: boolean
-  questions: boolean
-  reArchive: boolean
-  silent: boolean
-  verbose: boolean
+  compress?: boolean
+  forceSsim?: boolean
+  marker?: string
+  overwrite?: boolean
+  path?: string
+  processOne?: boolean
+  questions?: boolean
+  reArchive?: boolean
+  silent?: boolean
+  verbose?: boolean
 }
 
 export const defaults: ConfigOptions = {
@@ -83,7 +83,7 @@ class Config {
   }
 
   set (data: ConfigOptions): void {
-    Object.assign(this, data)
+    Object.assign(this, defaults, data)
   }
 }
 
