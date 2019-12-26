@@ -1,11 +1,11 @@
 import chalk from 'chalk'
-import { unlink, stat, copyFile } from 'fs'
+import { copyFile, stat, unlink } from 'fs'
 import { promisify } from 'util'
 import Config from './config'
 
-const unlinkAsync = promisify(unlink);
-const statAsync = promisify(stat);
-const copyFileAsync = promisify(copyFile);
+const unlinkAsync = promisify(unlink)
+const statAsync = promisify(stat)
+const copyFileAsync = promisify(copyFile)
 
 class Utils {
   readablePath (path) {

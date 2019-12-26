@@ -5,12 +5,12 @@ import * as globby from 'globby'
 import { basename, join, resolve as pathResolve } from 'path'
 import * as ProgressBar from 'progress'
 import { dateToIsoString } from 'shuutils'
-import { DirInfos, PhotoPath, PhotoSet } from './types' // eslint-disable-line no-unused-vars
 import Config from './config'
 import Logger from './logger'
+import Stat from './stat' // eslint-disable-line no-unused-vars
 import Stats from './stats'
+import { DirInfos, PhotoPath, PhotoSet } from './types' // eslint-disable-line no-unused-vars
 import Utils from './utils'
-import Stat from './stat';
 
 const exiftool = new ExifTool.ExifTool() // { minorErrorsRegExp: /error|warning/i } shows all errors
 const exiftoolExe = pathResolve('node_modules/exiftool-vendored.exe/bin/exiftool')
@@ -51,12 +51,12 @@ function getDirs () {
 
 function markFilepath (filepath) {
   return filepath.replace(/(?<filepathWithoutExt>.*)\.(?<fileExt>[a-zA-Z]{2,4})$/, (...args) => {
-    const { filepathWithoutExt, fileExt } = args[args.length - 1];
+    const { filepathWithoutExt, fileExt } = args[args.length - 1]
     return `${filepathWithoutExt}${Config.marker}.${fileExt}`
   })
 }
 
-function compress (prefix, photo, method = 'ssim', failAlreadyCount = false): Promise<string> {
+function compress (prefix: string, photo: PhotoPath, method = 'ssim', failAlreadyCount = false): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!Config.compress) {
       Stats.compress.skip++
@@ -140,15 +140,15 @@ function getDateFromTags (prefix: string, tags: ExifTool.Tags): Date {
   return null
 }
 
-async function deleteFile (filepath) {
+async function deleteFile (filepath: PhotoPath) {
   return Utils.deleteFile(filepath).catch(err => {
-    Stats.fileDeletion.fail++;
-    Stats.fileDeletion.failedPaths.push(filepath);
-    Logger.error(err);
-  });
+    Stats.fileDeletion.fail++
+    Stats.fileDeletion.failedPaths.push(filepath)
+    Logger.error(err)
+  })
 }
 
-function repairExif (prefix: string, filepath: string, exifRepairStat: Stat): Promise<string> {
+function repairExif (prefix: string, filepath: PhotoPath, exifRepairStat: Stat): Promise<string> {
   return new Promise((resolve, reject) => {
     let message = ''
     if (process.platform === 'win32') {
@@ -180,7 +180,7 @@ function repairExif (prefix: string, filepath: string, exifRepairStat: Stat): Pr
   })
 }
 
-function fixExifDate (prefix: string, filepath: string, dir: DirInfos, dateFixStat: Stat): Promise<string> {
+function fixExifDate (prefix: string, filepath: PhotoPath, dir: DirInfos, dateFixStat: Stat): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!dir.year || !dir.month) {
       dateFixStat.skip++
@@ -231,7 +231,7 @@ function fixExifDate (prefix: string, filepath: string, dir: DirInfos, dateFixSt
         }
         await exiftool.write(filepath, { AllDates: newDateStr }).catch(() => { throw new Error('failed at writing exif') })
         deleteFile(filepath + '_original') // avoid awaiting file deletion because it's not critical
-        dateFixStat.success++;
+        dateFixStat.success++
         const message = 'success, updated photo date'
         Logger.info({ prefix, message })
         resolve(message)
@@ -245,7 +245,7 @@ function fixExifDate (prefix: string, filepath: string, dir: DirInfos, dateFixSt
   })
 }
 
-async function createCopy (filepath: string, finalPhotoPath: string) {
+async function createCopy (filepath: PhotoPath, finalPhotoPath: PhotoPath) {
   return Utils.copyFile(filepath, finalPhotoPath, true)
     .then(() => {
       Stats.fileCopy.success++
@@ -272,7 +272,7 @@ async function checkPhotos (photos: PhotoSet, dir: DirInfos): Promise<string> {
     count = 1
   }
   let bar = null
-  if (!Config.verbose) {
+  if (!Config.verbose && !Config.silent) {
     bar = new ProgressBar('[:bar] processing folder : ' + dir.name, {
       complete: '=',
       incomplete: ' ',
@@ -296,12 +296,12 @@ async function checkPhotos (photos: PhotoSet, dir: DirInfos): Promise<string> {
           } else {
             Stats.photoProcess.skip++
             Logger.error('No overwrite && re-archive but cannot a new copy, skipping process for this photo...')
-            continue;
+            continue
           }
         } else {
           Stats.photoProcess.skip++
           Logger.info('No overwrite && no re-archive && archive exists, skipping process for this photo...')
-          continue;
+          continue
         }
       } else {
         const copySuccess = await createCopy(photo, markedPhotoPath)
@@ -310,7 +310,7 @@ async function checkPhotos (photos: PhotoSet, dir: DirInfos): Promise<string> {
         } else {
           Stats.photoProcess.skip++
           Logger.error('No overwrite but cannot a new copy, skipping process for this photo...')
-          continue;
+          continue
         }
       }
     }
@@ -455,12 +455,11 @@ function killExifTool () {
   return Promise.resolve('success, does not wait for exif-tool killing')
 }
 
-function startProcess () {
+export async function startProcess () {
   const app = 'Photo Archiver (' + process.platform + ')'
   Logger.start(app)
   Stats.start()
-  Config.init()
-    .then(() => getDirs())
+  return getDirs()
     .then(() => checkNextDir())
     .then(status => Logger.info(status))
     .catch(err => Logger.error(err))
@@ -471,7 +470,7 @@ function startProcess () {
     .then(() => Logger.complete(app))
 }
 
-startProcess()
+Config.init().then(() => startProcess()).catch(err => Logger.error(err))
 
 // Bug 1
 /*

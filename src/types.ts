@@ -1,3 +1,5 @@
+/* global PhotoPath, PhotoSet */
+
 class DirInfos {
   name: string // folder name
   year: number

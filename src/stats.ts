@@ -1,11 +1,12 @@
 
-import * as prettyMs from 'pretty-ms'
 import chalk from 'chalk'
-import { ColumnConfig, table, TableUserConfig } from 'table' // eslint-disable-line no-unused-vars
+import * as prettyMs from 'pretty-ms'
 import { getTimestampMs } from 'shuutils'
+import { ColumnConfig, table, TableUserConfig } from 'table' // eslint-disable-line no-unused-vars
+import Config from './config'
 import Logger from './logger'
+import Stat from './stat'
 import Utils from './utils'
-import Stat from './stat';
 
 class Stats {
   compress: Stat = new Stat()
@@ -91,9 +92,10 @@ class Stats {
         5: pathsColumn
       }
     }
-    // tslint:disable-next-line:no-console
-    console.log(table(data, opts))
-
+    if (!Config.silent) {
+      // tslint:disable-next-line:no-console
+      console.log(table(data, opts))
+    }
     if (this.readDir.fail) {
       Logger.warn('un-parsable directories cannot have their photos date-fixed, you should fix these directory names.\n')
     }
@@ -121,4 +123,3 @@ class Stats {
 
 const instance = new Stats()
 export default instance
-

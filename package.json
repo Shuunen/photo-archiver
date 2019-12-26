@@ -1,17 +1,5 @@
 {
-  "name": "photo-archiver",
-  "version": "0.1.0",
-  "main": "index.ts",
-  "repository": "git@github.com:Shuunen/photo-archiver.git",
   "author": "Romain Racamier-Lafon <romain.racamier@gmail.com>",
-  "license": "MIT",
-  "private": true,
-  "scripts": {
-    "start": "ts-node src/index.ts",
-    "dev": "nodemon",
-    "lint": "standard --fix {src,tests}/**/*.ts",
-    "test": "jest"
-  },
   "dependencies": {
     "chalk": "2.4.2",
     "exiftool-vendored": "7.6.1",
@@ -43,14 +31,23 @@
     "ts-node": "7.0.1",
     "typescript-eslint-parser": "21.0.2"
   },
+  "license": "MIT",
+  "main": "index.ts",
+  "name": "photo-archiver",
+  "private": true,
+  "repository": "git@github.com:Shuunen/photo-archiver.git",
+  "scripts": {
+    "dev": "nodemon",
+    "lint": "standard --fix {src,tests}/**/*.ts",
+    "start": "ts-node src/index.ts",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
   "standard": {
-    "globals": [
-      "test",
-      "expect"
-    ],
     "parser": "typescript-eslint-parser",
     "plugins": [
       "typescript"
     ]
-  }
+  },
+  "version": "0.1.0"
 }
