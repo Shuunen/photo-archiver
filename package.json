@@ -34,7 +34,7 @@
     "@types/pretty-ms": "4.0.0",
     "@types/progress": "2.0.3",
     "@types/signale": "1.2.1",
-    "@types/table": "4.0.5",
+    "@types/table": "4.0.7",
     "eslint-plugin-typescript": "0.14.0",
     "jest": "23.6.0",
     "nodemon": "1.19.0",
