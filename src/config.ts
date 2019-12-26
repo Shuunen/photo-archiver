@@ -2,11 +2,24 @@ import * as inquirer from 'inquirer'
 import * as minimist from 'minimist'
 const currentPath = process.cwd()
 
-export const defaults = {
+interface ConfigOptions {
+  compress: boolean
+  forceSsim: boolean
+  marker: string
+  overwrite: boolean
+  path: string
+  processOne: boolean
+  questions: boolean
+  reArchive: boolean
+  silent: boolean
+  verbose: boolean
+}
+
+export const defaults: ConfigOptions = {
   compress: true,
   forceSsim: false,
   marker: '-archived', // my-photo.jpg => my-photo-archived.jpg
-  overwrite: false, // true : will replace original photos / false : will use config marker and create new archived files
+  overwrite: false, // if true replace original photos, else new files will be generated (using config marker)
   path: currentPath + '/tests',
   processOne: false,
   questions: true,
@@ -43,32 +56,32 @@ const args = process.argv.slice(2)
 const data = minimist(args, { default: defaults })
 
 class Config {
-  compress: boolean
-  forceSsim: boolean
-  marker: string // my-photo.jpg => my-photo-archived.jpg
-  overwrite: boolean // if true replace original photos, else new files will be generated (using config marker)
-  path: string
-  processOne: boolean
-  questions: boolean
-  reArchive: boolean
-  silent: boolean
-  verbose: boolean
+  compress = defaults.compress;
+  forceSsim = defaults.forceSsim
+  marker = defaults.marker
+  overwrite = defaults.overwrite
+  path = defaults.path
+  processOne = defaults.processOne
+  questions = defaults.questions
+  reArchive = defaults.reArchive
+  silent = defaults.silent
+  verbose = defaults.verbose
 
-  constructor(data) {
+  constructor (data: ConfigOptions) {
     // console.log('Config : in constructor')
     this.set(data)
   }
 
   async init (): Promise<string> {
     if (this.questions) {
-      const answers = await inquirer.prompt(questions)
+      const answers: ConfigOptions = await inquirer.prompt(questions)
       this.set({ ...data, ...answers })
       return 'Config augmented via questions'
     }
     return 'Config with defaults'
   }
 
-  set (data: object): void {
+  set (data: ConfigOptions): void {
     Object.keys(data).forEach(key => {
       this[key] = data[key]
       // console.log('setting "' + key + '" with "' + data[key] + '"')

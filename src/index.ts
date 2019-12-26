@@ -15,9 +15,9 @@ import Utils from './utils'
 const exiftool = new ExifTool.ExifTool() // { minorErrorsRegExp: /error|warning/i } shows all errors
 const exiftoolExe = pathResolve('node_modules/exiftool-vendored.exe/bin/exiftool')
 const jpegRecompress = pathResolve('bin/jpeg-recompress')
-const dirs = []
+const dirs: PhotoSet = []
 
-function getDirectories (path): PhotoSet {
+function getDirectories (path: string): PhotoSet {
   return readdirSync(path).filter((file) => {
     return statSync(path + '/' + file).isDirectory()
   })
@@ -115,7 +115,7 @@ function zeroIfNeeded (date: number | string): string {
   return dateStr
 }
 
-function getDateFromTags (prefix: string, tags: ExifTool.Tags): Date {
+function getDateFromTags (prefix: string, tags: ExifTool.Tags): Date | null {
   // to avoid errors from ExifTool.Tags class instance
   const data = JSON.parse(JSON.stringify(tags))
   /*
@@ -182,26 +182,26 @@ function repairExif (prefix: string, filepath: PhotoPath, exifRepairStat: Stat):
 
 function fixExifDate (prefix: string, filepath: PhotoPath, dir: DirInfos, dateFixStat: Stat): Promise<string> {
   return new Promise((resolve, reject) => {
-    if (!dir.year || !dir.month) {
+    if (dir.year === -1 || dir.month === -1) {
       dateFixStat.skip++
       return resolve('cannot fix exif date without year and month')
     }
     exiftool.read(filepath)
       .then((tags: ExifTool.Tags) => getDateFromTags(prefix, tags))
-      .then(async (originalDate: Date) => {
-        const newDate = new Date(originalDate)
+      .then(async (originalDate) => {
+        const newDate = new Date(originalDate || '')
         const year = newDate.getFullYear()
         const month = newDate.getMonth() + 1
         let doRewrite = false
         if (originalDate) {
           Logger.info({ prefix, message: 'original date found : ' + dateToIsoString(originalDate, true).split('T')[0] })
-          if (dir.year !== null && year !== dir.year) {
+          if (year !== dir.year) {
             Logger.warn({ prefix, message: 'fixing photo year "' + year + '" => "' + dir.year + '"' })
             newDate.setFullYear(dir.year)
             newDate.setFullYear(dir.year) // this is intended, see bug 1 at the bottom of this file
             doRewrite = true
           }
-          if (dir.month !== null && month !== dir.month) {
+          if (month !== dir.month) {
             Logger.warn({ prefix, message: 'fixing photo month "' + month + '" => "' + dir.month + '"' })
             newDate.setMonth(dir.month - 1)
             newDate.setMonth(dir.month - 1) // this is intended, see bug 1 at the bottom of this file
@@ -209,11 +209,11 @@ function fixExifDate (prefix: string, filepath: PhotoPath, dir: DirInfos, dateFi
           }
         } else {
           doRewrite = true
-          if (dir.year !== null) {
+          if (dir.year !== -1) {
             newDate.setFullYear(dir.year)
             newDate.setFullYear(dir.year) // this is intended, see bug 1 at the bottom of this file
           }
-          if (dir.month !== null) {
+          if (dir.month !== -1) {
             newDate.setMonth(dir.month - 1)
             newDate.setMonth(dir.month - 1) // this is intended, see bug 1 at the bottom of this file
           }
@@ -390,9 +390,10 @@ function checkNextDir (): Promise<string> {
   }
   // extract first
   // full path
-  const dir = dirs.shift()
+  const dir = dirs.shift() || ''
   // directory/folder name
   const dirName = basename(dir)
+  const oDir: DirInfos = { name: dirName, year: -1, month: -1 }
   Logger.info('reading dir "' + dirName + '"')
   const dateMatches = dirName.match(/(\d{4})-(\d{2})/)
   let year = null
@@ -403,33 +404,31 @@ function checkNextDir (): Promise<string> {
     Logger.warn('failed at detecting year & month in "' + dir + '"')
   } else {
     year = parseInt(dateMatches[1], 10)
-    // too old or too futuristic :p
-    if (year < 1000 || year > 3000) {
+    if (year < 1000 || year > 3000) { // too old or too futuristic :p
       Logger.info('detected year out of range : "' + year + '"')
-      year = null
+      year = -1
       Stats.readDir.fail++
       Stats.readDir.failedPaths.push(dir)
     } else {
       Logger.info('detected year "' + year + '"')
     }
-
     month = parseInt(dateMatches[2], 10)
     if (month < 0 || month > 12) {
       Logger.info('detected month out of range : "' + month + '"')
-      month = null
-      if (year !== null) { // avoiding duplicate records
+      month = -1
+      if (year !== -1) { // avoiding duplicate records
         Stats.readDir.fail++
         Stats.readDir.failedPaths.push(dir)
       }
     } else {
       Logger.info('detected month "' + month + '"')
     }
-
-    if (year && month) {
+    if (year !== -1 && month !== -1) {
       Stats.readDir.success++
     }
+    oDir.year = year
+    oDir.month = month
   }
-  const oDir: DirInfos = { name: dirName, year, month }
   const include = join(dir, '**/*.(jpg|jpeg)')
   const exclude = '!' + join(dir, '**/*' + Config.marker + '.(jpg|jpeg)')
   const rules = [include, exclude]
@@ -470,7 +469,7 @@ export async function startProcess (): Promise<void> {
     .then(() => Logger.complete(app))
 }
 
-Config.init().then(() => startProcess()).catch(err => Logger.error(err))
+Config.init().then(() => startProcess()).catch((err: Error) => Logger.error(err))
 
 // Bug 1
 /*

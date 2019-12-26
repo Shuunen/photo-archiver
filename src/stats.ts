@@ -18,7 +18,7 @@ class Stats {
   fileDeletion: Stat = new Stat()
   photoProcess: Stat = new Stat()
   readDir: Stat = new Stat()
-  startTime: number
+  startTime = 0
 
   public start (): void {
     this.startTime = getTimestampMs()
