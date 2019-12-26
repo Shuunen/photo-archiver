@@ -67,9 +67,10 @@ class Config {
   silent = defaults.silent
   verbose = defaults.verbose
 
-  constructor (data: ConfigOptions) {
+  constructor (data: minimist.ParsedArgs) {
     // console.log('Config : in constructor')
-    this.set(data)
+    const { compress, forceSsim, marker, overwrite, path, processOne, questions, reArchive, silent, verbose } = data
+    this.set({ compress, forceSsim, marker, overwrite, path, processOne, questions, reArchive, silent, verbose })
   }
 
   async init (): Promise<string> {
@@ -82,10 +83,7 @@ class Config {
   }
 
   set (data: ConfigOptions): void {
-    Object.keys(data).forEach(key => {
-      this[key] = data[key]
-      // console.log('setting "' + key + '" with "' + data[key] + '"')
-    })
+    Object.assign(this, data)
   }
 }
 
