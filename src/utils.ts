@@ -8,19 +8,19 @@ const statAsync = promisify(stat)
 const copyFileAsync = promisify(copyFile)
 
 class Utils {
-  readablePath (path) {
+  readablePath (path: string): string {
     const regex = /\\+|\/+/gm
     const subst = '/'
     return path.replace(regex, subst)
   }
 
-  readableDirs (directories, redundantPath = Config.path) {
+  readableDirs (directories: string[], redundantPath = Config.path): string {
     return directories.map(dir => {
       return this.readablePath(dir).replace(redundantPath, '')
     }).join(chalk.gray(' & '))
   }
 
-  async fileExists (filepath) {
+  async fileExists (filepath: string): Promise<boolean> {
     return statAsync(filepath)
       .then(stats => stats.isFile())
       .catch(err => {
@@ -31,7 +31,7 @@ class Utils {
       })
   }
 
-  async deleteFile (filepath) {
+  async deleteFile (filepath: string): Promise<void> {
     const exists = await this.fileExists(filepath)
     if (!exists) {
       return
@@ -39,7 +39,7 @@ class Utils {
     return unlinkAsync(filepath)
   }
 
-  async copyFile (source, dest, overwrite = false) {
+  async copyFile (source: string, dest: string, overwrite = false): Promise<void> {
     const sourceExists = await this.fileExists(source)
     const destExists = await this.fileExists(dest)
     if (!sourceExists) {

@@ -20,15 +20,15 @@ class Stats {
   readDir: Stat = new Stat()
   startTime: number
 
-  public start () {
+  public start (): void {
     this.startTime = getTimestampMs()
   }
 
-  public stop () {
+  public stop (): void {
     this.showMetrics()
   }
 
-  private getMetricRow (label: string, data: Stat) {
+  private getMetricRow (label: string, data: Stat): string[] {
     const row = [label]
     const spacer = '  '
     // Column 1
@@ -61,7 +61,7 @@ class Stats {
     return row
   }
 
-  private showMetricsTable () {
+  private showMetricsTable (): void {
     const data = [
       ['', 'Success', ' Skip', ' Fail', 'Total', 'Failing photo/directory paths'],
       this.getMetricRow('Photos processed', this.photoProcess),
@@ -69,7 +69,7 @@ class Stats {
       this.getMetricRow('Date fixed 1/2', this.dateFix1),
       this.getMetricRow('Date fixed 2/2', this.dateFix2),
       this.getMetricRow('Exif repaired 1/2', this.exifRepair1),
-      this.getMetricRow('Exif repaired 2/2', this.exifRepair2)
+      this.getMetricRow('Exif repaired 2/2', this.exifRepair2),
     ]
     if (this.fileDeletion.fail) {
       data.push(this.getMetricRow('File deletions', this.fileDeletion))
@@ -89,8 +89,8 @@ class Stats {
         2: countColumn,
         3: countColumn,
         4: countColumn,
-        5: pathsColumn
-      }
+        5: pathsColumn,
+      },
     }
     if (!Config.silent) {
       // tslint:disable-next-line:no-console
@@ -101,7 +101,7 @@ class Stats {
     }
   }
 
-  private showMetrics () {
+  private showMetrics (): void {
     const timeElapsed: number = getTimestampMs() - this.startTime
     // const timeReadable: string = prettyMs(timeElapsed, { verbose: true })
     const photoProcessed: number = this.photoProcess.total

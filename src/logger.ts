@@ -6,44 +6,45 @@ class Logger {
     if (Config.silent) {
       return
     }
-    signale.start.apply(signale, things)
+    signale.start(...things)
   }
 
   complete (...things: Array<{}>): void {
     if (Config.silent) {
       return
     }
-    signale.complete.apply(signale, things)
+    signale.complete(...things)
   }
 
   info (...things: Array<{}>): void {
     if (Config.silent || !Config.verbose) {
       return
     }
-    signale.info.apply(signale, things)
+    signale.info(...things)
   }
 
   log (...things: Array<{}>): void {
     if (Config.silent) {
       return
     }
-    signale.log.apply(signale, things)
+    signale.log(...things)
   }
 
   warn (...things: Array<{}>): void {
     if (Config.silent) {
       return
     }
-    signale.warn.apply(signale, things)
+    signale.warn(...things)
   }
 
   success (...things: Array<{}>): void {
     if (Config.silent) {
       return
     }
-    signale.success.apply(signale, things)
+    signale.success(...things)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error (...things: any): void {
     if (things.length === 1) {
       things = things[0]
@@ -55,7 +56,7 @@ class Logger {
         things = things.message
       }
     }
-    signale.error.apply(signale, things)
+    signale.error(...things)
   }
 }
 

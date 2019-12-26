@@ -1,10 +1,10 @@
 export default class Stat {
-  fail: number = 0
+  fail = 0
   failedPaths: string[] = []
-  skip: number = 0
-  success: number = 0
+  skip = 0
+  success = 0
 
-  get total () {
+  get total (): number {
     return this.fail + this.skip + this.success
   }
 }

@@ -17,13 +17,13 @@ const exiftoolExe = pathResolve('node_modules/exiftool-vendored.exe/bin/exiftool
 const jpegRecompress = pathResolve('bin/jpeg-recompress')
 const dirs = []
 
-function getDirectories (path) {
+function getDirectories (path): PhotoSet {
   return readdirSync(path).filter((file) => {
     return statSync(path + '/' + file).isDirectory()
   })
 }
 
-function getDirs () {
+function getDirs (): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!Config.path) {
       reject(new Error('No path found in config'))
@@ -49,7 +49,7 @@ function getDirs () {
   })
 }
 
-function markFilepath (filepath) {
+function markFilepath (filepath: PhotoPath): PhotoPath {
   return filepath.replace(/(?<filepathWithoutExt>.*)\.(?<fileExt>[a-zA-Z]{2,4})$/, (...args) => {
     const { filepathWithoutExt, fileExt } = args[args.length - 1]
     return `${filepathWithoutExt}${Config.marker}.${fileExt}`
@@ -107,7 +107,7 @@ function compress (prefix: string, photo: PhotoPath, method = 'ssim', failAlread
   })
 }
 
-function zeroIfNeeded (date: number | string) {
+function zeroIfNeeded (date: number | string): string {
   let dateStr = date + ''
   if (dateStr.length === 1) {
     dateStr = '0' + dateStr
@@ -140,7 +140,7 @@ function getDateFromTags (prefix: string, tags: ExifTool.Tags): Date {
   return null
 }
 
-async function deleteFile (filepath: PhotoPath) {
+async function deleteFile (filepath: PhotoPath): Promise<void> {
   return Utils.deleteFile(filepath).catch(err => {
     Stats.fileDeletion.fail++
     Stats.fileDeletion.failedPaths.push(filepath)
@@ -154,7 +154,7 @@ function repairExif (prefix: string, filepath: PhotoPath, exifRepairStat: Stat):
     if (process.platform === 'win32') {
       const command = exiftoolExe + ` -all= -tagsfromfile @ -all:all -unsafe -icc_profile "${filepath}"`
       // Logger.info('executing command :', command)
-      exec(command, async (err, stdout, stderr) => {
+      exec(command, async (err) => {
         if (err) {
           // node couldn't execute the command
           exifRepairStat.fail++
@@ -245,7 +245,7 @@ function fixExifDate (prefix: string, filepath: PhotoPath, dir: DirInfos, dateFi
   })
 }
 
-async function createCopy (filepath: PhotoPath, finalPhotoPath: PhotoPath) {
+async function createCopy (filepath: PhotoPath, finalPhotoPath: PhotoPath): Promise<boolean> {
   return Utils.copyFile(filepath, finalPhotoPath, true)
     .then(() => {
       Stats.fileCopy.success++
@@ -277,7 +277,7 @@ async function checkPhotos (photos: PhotoSet, dir: DirInfos): Promise<string> {
       complete: '=',
       incomplete: ' ',
       total: count,
-      width: 40
+      width: 40,
     })
   }
   // Logger.info(photos)
@@ -449,13 +449,13 @@ function checkNextDir (): Promise<string> {
     })
 }
 
-function killExifTool () {
+function killExifTool (): Promise<string> {
   Logger.info('killing exif tool instance...')
   exiftool.end()
   return Promise.resolve('success, does not wait for exif-tool killing')
 }
 
-export async function startProcess () {
+export async function startProcess (): Promise<void> {
   const app = 'Photo Archiver (' + process.platform + ')'
   Logger.start(app)
   Stats.start()

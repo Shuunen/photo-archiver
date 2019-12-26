@@ -12,7 +12,7 @@ export const defaults = {
   questions: true,
   reArchive: true, // true : will replace previously archived files
   silent: false, // avoid terminal logging
-  verbose: false
+  verbose: false,
 }
 
 const questions = [
@@ -20,20 +20,20 @@ const questions = [
     default: defaults.path,
     message: 'Path to photos ?',
     name: 'path',
-    type: 'input'
+    type: 'input',
   },
   {
     default: defaults.overwrite,
     message: 'Overwrite original photos ?',
     name: 'overwrite',
-    type: 'confirm'
+    type: 'confirm',
   },
   {
     default: defaults.reArchive,
     message: 'Overwrite previously archived photos ?',
     name: 'reArchive',
-    type: 'confirm'
-  }
+    type: 'confirm',
+  },
 ]
 
 // if process called with --plop --data=2
@@ -54,12 +54,12 @@ class Config {
   silent: boolean
   verbose: boolean
 
-  constructor (data) {
+  constructor(data) {
     // console.log('Config : in constructor')
     this.set(data)
   }
 
-  async init () {
+  async init (): Promise<string> {
     if (this.questions) {
       const answers = await inquirer.prompt(questions)
       this.set({ ...data, ...answers })
@@ -68,7 +68,7 @@ class Config {
     return 'Config with defaults'
   }
 
-  set (data: any) {
+  set (data: object): void {
     Object.keys(data).forEach(key => {
       this[key] = data[key]
       // console.log('setting "' + key + '" with "' + data[key] + '"')
