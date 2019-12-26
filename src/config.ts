@@ -1,16 +1,17 @@
-import * as minimist from 'minimist' // eslint-disable-line no-unused-vars
 import * as inquirer from 'inquirer'
+import * as minimist from 'minimist'
 const currentPath = process.cwd()
 
 export const defaults = {
   compress: true,
   forceSsim: false,
   marker: '-archived', // my-photo.jpg => my-photo-archived.jpg
-  overwrite: true, // true : will replace original photos / false : will use config marker and create new archived files
-  reArchive: false, // true : will replace previously archived files
+  overwrite: false, // true : will replace original photos / false : will use config marker and create new archived files
   path: currentPath + '/tests',
   processOne: false,
   questions: true,
+  reArchive: true, // true : will replace previously archived files
+  silent: false, // avoid terminal logging
   verbose: false
 }
 
@@ -23,8 +24,14 @@ const questions = [
   },
   {
     default: defaults.overwrite,
-    message: 'Overwrite photos ?',
+    message: 'Overwrite original photos ?',
     name: 'overwrite',
+    type: 'confirm'
+  },
+  {
+    default: defaults.reArchive,
+    message: 'Overwrite previously archived photos ?',
+    name: 'reArchive',
     type: 'confirm'
   }
 ]
@@ -40,22 +47,23 @@ class Config {
   forceSsim: boolean
   marker: string // my-photo.jpg => my-photo-archived.jpg
   overwrite: boolean // if true replace original photos, else new files will be generated (using config marker)
-  reArchive: boolean
   path: string
   processOne: boolean
   questions: boolean
+  reArchive: boolean
+  silent: boolean
   verbose: boolean
 
-  constructor(data) {
+  constructor (data) {
     // console.log('Config : in constructor')
     this.set(data)
   }
 
   async init () {
     if (this.questions) {
-      const answers = await inquirer.prompt(questions);
-      this.set({ ...data, ...answers });
-      return 'Config augmented via questions';
+      const answers = await inquirer.prompt(questions)
+      this.set({ ...data, ...answers })
+      return 'Config augmented via questions'
     }
     return 'Config with defaults'
   }
