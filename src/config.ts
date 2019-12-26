@@ -6,7 +6,8 @@ export const defaults = {
   compress: true,
   forceSsim: false,
   marker: '-archived', // my-photo.jpg => my-photo-archived.jpg
-  overwrite: true, // true : will replace original photos / false : will use config marker and create new files
+  overwrite: true, // true : will replace original photos / false : will use config marker and create new archived files
+  reArchive: false, // true : will replace previously archived files
   path: currentPath + '/tests',
   processOne: false,
   questions: true,
@@ -38,28 +39,28 @@ class Config {
   compress: boolean
   forceSsim: boolean
   marker: string // my-photo.jpg => my-photo-archived.jpg
-  overwrite: boolean // boolean : will replace original photos / boolean : will use config marker and create new files
+  overwrite: boolean // if true replace original photos, else new files will be generated (using config marker)
+  reArchive: boolean
   path: string
   processOne: boolean
   questions: boolean
   verbose: boolean
 
-  constructor (data) {
+  constructor(data) {
     // console.log('Config : in constructor')
     this.set(data)
   }
 
-  init () {
+  async init () {
     if (this.questions) {
-      return inquirer.prompt(questions).then(answers => {
-        this.set({ ...data, ...answers })
-        return 'Config augmented via questions'
-      })
+      const answers = await inquirer.prompt(questions);
+      this.set({ ...data, ...answers });
+      return 'Config augmented via questions';
     }
-    return Promise.resolve('Config with defaults')
+    return 'Config with defaults'
   }
 
-  set (data) {
+  set (data: any) {
     Object.keys(data).forEach(key => {
       this[key] = data[key]
       // console.log('setting "' + key + '" with "' + data[key] + '"')
