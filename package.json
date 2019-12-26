@@ -1,5 +1,6 @@
 {
   "author": "Romain Racamier-Lafon <romain.racamier@gmail.com>",
+  "bugs": "https://github.com/Shuunen/photo-archiver/issues",
   "dependencies": {
     "chalk": "2.4.2",
     "exiftool-vendored": "7.6.1",
@@ -13,6 +14,7 @@
     "table": "5.3.3",
     "typescript": "3.4.5"
   },
+  "description": "A personal photo archiver",
   "devDependencies": {
     "@types/globby": "8.0.0",
     "@types/inquirer": "0.0.44",
@@ -23,31 +25,39 @@
     "@types/progress": "2.0.3",
     "@types/signale": "1.2.1",
     "@types/table": "4.0.7",
-    "eslint-plugin-typescript": "0.14.0",
     "jest": "23.6.0",
     "nodemon": "1.19.0",
-    "standard": "12.0.1",
     "ts-jest": "23.10.5",
-    "ts-node": "7.0.1",
-    "typescript-eslint-parser": "21.0.2"
+    "ts-node": "7.0.1"
   },
-  "license": "MIT",
-  "main": "index.ts",
-  "name": "photo-archiver",
+  "files": [
+    "src",
+    "*"
+  ],
+  "homepage": "https://github.com/Shuunen/photo-archiver",
+  "keywords": [
+    "photo",
+    "photos",
+    "archiver"
+  ],
+  "license": "GPL-3.0",
+  "name": "@shuunen/photo-archiver",
   "private": true,
-  "repository": "git@github.com:Shuunen/photo-archiver.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Shuunen/photo-archiver.git"
+  },
   "scripts": {
+    "check": "npx repo-check",
+    "ci": "npm run test",
     "dev": "nodemon",
-    "lint": "standard --fix {src,tests}/**/*.ts",
+    "lint": "eslint --fix --ignore-path .gitignore --ext .js,.ts .",
+    "postversion": "git push && git push --tags",
     "start": "ts-node src/index.ts",
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "test": "npm run lint && npm run check && npm run tests:unit",
+    "tests:unit": "jest",
+    "tests:unit:watch": "jest --watch",
+    "update": "npx npm-check-updates -u"
   },
-  "standard": {
-    "parser": "typescript-eslint-parser",
-    "plugins": [
-      "typescript"
-    ]
-  },
-  "version": "0.1.0"
+  "version": "0.0.1"
 }
