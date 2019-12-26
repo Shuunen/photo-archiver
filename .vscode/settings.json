@@ -1,13 +1,13 @@
 {
-  "typescript.validate.enable": false,
-  "javascript.validate.enable": false,
-  "typescript.tsdk": "node_modules\\typescript\\lib",
-  "standard.autoFixOnSave": true,
-  "standard.run": "onSave",
-  "standard.usePackageJson": true,
-  "standard.validate": [
-    "javascript",
-    "typescript",
-    "javascriptreact"
-  ]
+  "cSpell.words": [
+    "exiftool",
+    "globby",
+    "nocase",
+    "noexif",
+    "smallfry",
+    "ssim",
+    "tagsfromfile",
+    "vendored"
+  ],
+  "typescript.tsdk": "node_modules\\typescript\\lib"
 }
