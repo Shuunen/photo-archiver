@@ -1,24 +1,20 @@
 import * as signale from 'signale' // eslint-disable-line no-unused-vars
 import Config from './config' // eslint-disable-line no-unused-vars
 
-export default class Logger {
-  static start: (...things: Array<{}>) => void = signale.start.bind(signale)
-  static complete: (...things: Array<{}>) => void = signale.complete.bind(signale)
+class Logger {
+  start: (...things: Array<{}>) => void = signale.start.bind(signale)
+  complete: (...things: Array<{}>) => void = signale.complete.bind(signale)
 
-  static log (...things: Array<{}>):void {
-    if (Config.verbose) {
-      signale.log(things)
-    }
-  }
-  static info (...things: Array<{}>):void {
+  info (...things: Array<{}>): void {
     if (Config.verbose) {
       signale.info(things)
     }
   }
 
-  static warn: (...things: Array<{}>) => void = signale.warn.bind(signale)
-  static success: (...things: Array<{}>) => void = signale.success.bind(signale)
-  static error (...things: any): void {
+  log: (...things: Array<{}>) => void = signale.log.bind(signale)
+  warn: (...things: Array<{}>) => void = signale.warn.bind(signale)
+  success: (...things: Array<{}>) => void = signale.success.bind(signale)
+  error (...things: any): void {
     if (things.length === 1) {
       things = things[0]
     }
@@ -32,3 +28,7 @@ export default class Logger {
     signale.error(things)
   }
 }
+
+const instance = new Logger()
+export default instance
+
