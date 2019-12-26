@@ -5,51 +5,52 @@ import { ColumnConfig, table, TableUserConfig } from 'table' // eslint-disable-l
 import { getTimestampMs } from 'shuutils'
 import Logger from './logger'
 import Utils from './utils'
+import Stat from './stat';
 
-class Stat {
-  fail: number = 0
-  failedPaths: string[] = []
-  skip: number = 0
-  success: number = 0
-  count: number = 0
-}
+class Stats {
+  compress: Stat = new Stat()
+  dateFix1: Stat = new Stat()
+  dateFix2: Stat = new Stat()
+  exifRepair1: Stat = new Stat()
+  exifRepair2: Stat = new Stat()
+  fileCopy: Stat = new Stat()
+  fileDeletion: Stat = new Stat()
+  photoProcess: Stat = new Stat()
+  readDir: Stat = new Stat()
+  startTime: number
 
-export default class Stats {
-  static startTime: number
-  static compress: Stat = new Stat()
-  static dateFix: Stat = new Stat()
-  static exifRepair: Stat = new Stat()
-  static fileDeletion: Stat = new Stat()
-  static photoProcess: Stat = new Stat()
-  static readDate: Stat = new Stat()
-  static readDir: Stat = new Stat()
-
-  public static start () {
+  public start () {
     this.startTime = getTimestampMs()
   }
 
-  public static stop () {
+  public stop () {
     this.showMetrics()
   }
 
-  private static getMetricRow (label, data) {
+  private getMetricRow (label: string, data: Stat) {
     const row = [label]
     const spacer = '  '
+    // Column 1
     if (!data.success) {
       row.push(spacer + '0')
     } else {
       row.push(spacer + chalk.green(data.success.toString()))
     }
+    // Column 2
     if (!data.skip) {
       row.push(spacer + '0')
     } else {
       row.push(spacer + chalk.yellow(data.skip.toString()))
     }
+    // Column 3
     if (!data.fail) {
       row.push(spacer + '0')
     } else {
       row.push(spacer + chalk.red(data.fail.toString()))
     }
+    // Column 4
+    row.push(spacer + chalk.white(data.total.toString()))
+    // Column 5
     if (!data.failedPaths) {
       row.push(spacer)
     } else {
@@ -59,60 +60,65 @@ export default class Stats {
     return row
   }
 
-  private static showMetricsTable () {
+  private showMetricsTable () {
     const data = [
-      ['', 'Success', ' Skip', ' Fail', 'Fail photo and dir paths'],
+      ['', 'Success', ' Skip', ' Fail', 'Total', 'Failing photo/directory paths'],
+      this.getMetricRow('Photos processed', this.photoProcess),
       this.getMetricRow('Compressed', this.compress),
-      this.getMetricRow('Date fixed', this.dateFix),
-      this.getMetricRow('Exif repaired', this.exifRepair)
+      this.getMetricRow('Date fixed 1/2', this.dateFix1),
+      this.getMetricRow('Date fixed 2/2', this.dateFix2),
+      this.getMetricRow('Exif repaired 1/2', this.exifRepair1),
+      this.getMetricRow('Exif repaired 2/2', this.exifRepair2)
     ]
     if (this.fileDeletion.fail) {
       data.push(this.getMetricRow('File deletions', this.fileDeletion))
     }
-    if (this.readDate.fail) {
-      data.push(this.getMetricRow('Date read', this.readDate))
+    if (this.fileCopy.fail) {
+      data.push(this.getMetricRow('File copy', this.fileCopy))
     }
     if (this.readDir.fail) {
-      data.push(this.getMetricRow('Dir read', this.readDir))
+      data.push(this.getMetricRow('Dirname parsed', this.readDir))
     }
-    // Quick fix until https://github.com/gajus/table/issues/72 is solved
-    const optWrap: ColumnConfig = {
-      width: 80,
-      wrapWord: true
-    } as ColumnConfig
-    const optNumber: ColumnConfig = {
-      width: 7
-    }
+    const pathsColumn: ColumnConfig = { width: 120, wrapWord: true }
+    const countColumn: ColumnConfig = { width: 7 }
     const opts: TableUserConfig = {
       columns: {
-        0: {
-          alignment: 'right'
-        },
-        1: optNumber,
-        2: optNumber,
-        3: optNumber,
-        4: optWrap
+        0: { alignment: 'right' },
+        1: countColumn,
+        2: countColumn,
+        3: countColumn,
+        4: countColumn,
+        5: pathsColumn
       }
     }
     // tslint:disable-next-line:no-console
     console.log(table(data, opts))
+
+    if (this.readDir.fail) {
+      Logger.warn('un-parsable directories cannot have their photos date-fixed, you should fix these directory names.\n')
+    }
   }
 
-  private static showMetrics () {
+  private showMetrics () {
     const timeElapsed: number = getTimestampMs() - this.startTime
     // const timeReadable: string = prettyMs(timeElapsed, { verbose: true })
-    const photoProcessed: number = this.photoProcess.count
+    const photoProcessed: number = this.photoProcess.total
     const timeElapsedPerPhoto = Math.round(timeElapsed / photoProcessed) || 0
     if (photoProcessed > 0) {
+      Logger.log(`\nFound ${photoProcessed} photos, ${this.photoProcess.success} has been processed & ${this.photoProcess.skip || 'no photos'} has been skipped`)
       if (timeElapsedPerPhoto > 0) {
-        Logger.info(`spent an average of ${prettyMs(timeElapsedPerPhoto, { verbose: true })} per photo`)
+        Logger.log(`Spent an average of ${prettyMs(timeElapsedPerPhoto, { verbose: true })} per photo`)
       }
-      if (timeElapsedPerPhoto > 0 && photoProcessed > 1) {
-        Logger.info(`whole process took ${prettyMs(timeElapsed, { verbose: true })} \n`)
+      if (timeElapsed > 0) {
+        Logger.log(`The whole process took ${prettyMs(timeElapsed, { verbose: true })} \n`)
         this.showMetricsTable()
       }
     } else {
-      Logger.info('no photos compressed or date fixed')
+      Logger.log('no photos compressed or date fixed')
     }
   }
 }
+
+const instance = new Stats()
+export default instance
+
