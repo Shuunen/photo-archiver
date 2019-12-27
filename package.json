@@ -64,9 +64,9 @@
     "dev": "nodemon",
     "lint": "eslint --fix --ignore-path .gitignore --ext .js,.ts .",
     "postversion": "git push && git push --tags",
-    "start": "ts-node src/index.ts",
+    "start": "ts-node src/start.ts",
     "test": "npm run lint && npm run check && npm run tests:unit",
-    "tests:unit": "jest --detectOpenHandles",
+    "tests:unit": "jest",
     "tests:unit:watch": "jest --watch",
     "update": "npx npm-check-updates -u"
   },

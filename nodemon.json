@@ -1,5 +1,5 @@
 {
-  "exec": "ts-node src/index.ts --no-questions --no-overwrite --reArchive --verbose",
+  "exec": "ts-node src/start.ts --no-questions --no-overwrite --reArchive --verbose",
   "ext": "ts",
   "watch": [
     "src"

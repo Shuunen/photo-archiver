@@ -12,6 +12,7 @@ import Stats from './stats'
 import { DirInfos, PhotoPath, PhotoSet } from './types' // eslint-disable-line no-unused-vars
 import Utils from './utils'
 
+// Here may not be the best place to instantiate ExifTool
 const exiftool = new ExifTool.ExifTool() // { minorErrorsRegExp: /error|warning/i } shows all errors
 const exiftoolExe = pathResolve('node_modules/exiftool-vendored.exe/bin/exiftool')
 const jpegRecompress = pathResolve('bin/jpeg-recompress')
@@ -238,7 +239,7 @@ function fixExifDate (prefix: string, filepath: PhotoPath, dir: DirInfos, dateFi
         Logger.info({ prefix, message })
         resolve(message)
       })
-      .catch(err => {
+      .catch((err: Error) => {
         dateFixStat.fail++
         dateFixStat.failedPaths.push(filepath)
         Logger.error(err)
@@ -449,10 +450,13 @@ async function checkNextDir (): Promise<string> {
   }
 }
 
-function killExifTool (): Promise<string> {
+export async function killExifTool (): Promise<void> {
   Logger.info('killing exif tool instance...')
-  exiftool.end()
-  return Promise.resolve('success, does not wait for exif-tool killing')
+  console.log('killing exif tool instance...')
+  return exiftool.end().then(() => console.log('exif tool instance KILLED ?!')).catch((err: Error) => {
+    console.error(err)
+    console.log('exif tool instance NOT YET KILLED ?!')
+  })
 }
 
 export async function startProcess (): Promise<void> {
@@ -469,8 +473,6 @@ export async function startProcess (): Promise<void> {
     .catch(err => Logger.error(err))
     .then(() => Logger.complete(app))
 }
-
-Config.init().then(() => startProcess()).catch((err: Error) => console.error(err))
 
 // Bug 1
 /*

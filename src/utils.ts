@@ -56,6 +56,10 @@ class Utils {
     }
     return copyFileAsync(source, dest)
   }
+
+  async sleep (ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, (ms || 1000)))
+  }
 }
 
 const instance = new Utils()
