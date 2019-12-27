@@ -152,7 +152,8 @@ async function deleteFile (filepath: PhotoPath): Promise<void> {
 function repairExif (prefix: string, filepath: PhotoPath, exifRepairStat: Stat): Promise<string> {
   return new Promise((resolve, reject) => {
     let message = ''
-    if (process.platform === 'win32') {
+    const windows = process.platform === 'win32'
+    if (windows) {
       const command = exiftoolExe + ` -all= -tagsfromfile @ -all:all -unsafe -icc_profile "${filepath}"`
       // Logger.info('executing command :', command)
       exec(command, async (err) => {
