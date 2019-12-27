@@ -1,16 +1,32 @@
-import * as minimist from 'minimist' // eslint-disable-line no-unused-vars
 import * as inquirer from 'inquirer'
-const currentPath = process.cwd()
+import * as minimist from 'minimist'
+import { posix } from 'path'
+const currentPath = process.cwd().split('\\').join('/')
 
-export const defaults = {
+interface ConfigOptions {
+  compress?: boolean
+  forceSsim?: boolean
+  marker?: string
+  overwrite?: boolean
+  path?: string
+  processOne?: boolean
+  questions?: boolean
+  reArchive?: boolean
+  silent?: boolean
+  verbose?: boolean
+}
+
+export const defaults: ConfigOptions = {
   compress: true,
   forceSsim: false,
   marker: '-archived', // my-photo.jpg => my-photo-archived.jpg
-  overwrite: true, // true : will replace original photos / false : will use config marker and create new files
-  path: currentPath + '/tests',
+  overwrite: false, // if true replace original photos, else new files will be generated (using config marker)
+  path: posix.join(currentPath, '/tests'),
   processOne: false,
   questions: true,
-  verbose: false
+  reArchive: true, // true : will replace previously archived files
+  silent: false, // avoid terminal logging
+  verbose: false,
 }
 
 const questions = [
@@ -18,14 +34,20 @@ const questions = [
     default: defaults.path,
     message: 'Path to photos ?',
     name: 'path',
-    type: 'input'
+    type: 'input',
   },
   {
     default: defaults.overwrite,
-    message: 'Overwrite photos ?',
+    message: 'Overwrite original photos ?',
     name: 'overwrite',
-    type: 'confirm'
-  }
+    type: 'confirm',
+  },
+  {
+    default: defaults.reArchive,
+    message: 'Overwrite previously archived photos ?',
+    name: 'reArchive',
+    type: 'confirm',
+  },
 ]
 
 // if process called with --plop --data=2
@@ -35,35 +57,34 @@ const args = process.argv.slice(2)
 const data = minimist(args, { default: defaults })
 
 class Config {
-  compress: boolean
-  forceSsim: boolean
-  marker: string // my-photo.jpg => my-photo-archived.jpg
-  overwrite: boolean // boolean : will replace original photos / boolean : will use config marker and create new files
-  path: string
-  processOne: boolean
-  questions: boolean
-  verbose: boolean
+  compress = defaults.compress;
+  forceSsim = defaults.forceSsim
+  marker = defaults.marker
+  overwrite = defaults.overwrite
+  path = defaults.path
+  processOne = defaults.processOne
+  questions = defaults.questions
+  reArchive = defaults.reArchive
+  silent = defaults.silent
+  verbose = defaults.verbose
 
-  constructor (data) {
+  constructor (data: minimist.ParsedArgs) {
     // console.log('Config : in constructor')
-    this.set(data)
+    const { compress, forceSsim, marker, overwrite, path, processOne, questions, reArchive, silent, verbose } = data
+    this.set({ compress, forceSsim, marker, overwrite, path, processOne, questions, reArchive, silent, verbose })
   }
 
-  init () {
+  async init (): Promise<string> {
     if (this.questions) {
-      return inquirer.prompt(questions).then(answers => {
-        this.set({ ...data, ...answers })
-        return 'Config augmented via questions'
-      })
+      const answers: ConfigOptions = await inquirer.prompt(questions)
+      this.set({ ...data, ...answers })
+      return 'Config augmented via questions'
     }
-    return Promise.resolve('Config with defaults')
+    return 'Config with defaults'
   }
 
-  set (data) {
-    Object.keys(data).forEach(key => {
-      this[key] = data[key]
-      // console.log('setting "' + key + '" with "' + data[key] + '"')
-    })
+  set (data: ConfigOptions): void {
+    Object.assign(this, defaults, data)
   }
 }
 

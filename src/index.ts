@@ -1,58 +1,62 @@
 import { exec } from 'child_process'
 import * as ExifTool from 'exiftool-vendored'
-import { readdirSync, statSync, unlink } from 'fs'
+import { readdirSync, statSync } from 'fs'
 import * as globby from 'globby'
-import { basename, join, resolve as pathResolve } from 'path'
+import { basename, posix, resolve as pathResolve } from 'path'
 import * as ProgressBar from 'progress'
 import { dateToIsoString } from 'shuutils'
-import { DirInfos, PhotoPath, PhotoSet } from './types' // eslint-disable-line no-unused-vars
 import Config from './config'
 import Logger from './logger'
+import Stat from './stat' // eslint-disable-line no-unused-vars
 import Stats from './stats'
+import { DirInfos, PhotoPath, PhotoSet } from './types' // eslint-disable-line no-unused-vars
 import Utils from './utils'
 
-const exiftool = new ExifTool.ExifTool() // { minorErrorsRegExp: /error|warning/i } shows all errors
 const exiftoolExe = pathResolve('node_modules/exiftool-vendored.exe/bin/exiftool')
 const jpegRecompress = pathResolve('bin/jpeg-recompress')
-const dirs = []
+const dirs: PhotoSet = []
 
-function getDirectories (path) {
+function getDirectories (path: string): PhotoSet {
   return readdirSync(path).filter((file) => {
     return statSync(path + '/' + file).isDirectory()
   })
 }
 
-function getDirs () {
+function getDirs (): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!Config.path) {
       reject(new Error('No path found in config'))
     }
-    getDirectories(Config.path).map((dir) => {
-      // dir will be succesivly 2013, 2014,...
-      const subDir = join(Config.path, dir)
+    const path = Config.path || '.'
+    getDirectories(path).map((dir) => {
+      // dir will be successively 2013, 2014,...
+      const subDir = posix.join(path, dir)
       Logger.info('dir', dir)
       Logger.info('subDir', subDir)
       if (dir.length === 4) {
-        // like a year 2018 that contains subfolders
-        getDirectories(subDir).forEach((sub) => dirs.push(join(subDir, sub)))
+        // like a year 2018 that contains sub-folders
+        getDirectories(subDir).forEach((sub) => dirs.push(posix.join(subDir, sub)))
       } else {
         dirs.push(subDir)
       }
     })
-    // if no subdir, just process input dir
+    // if no sub-dir, just process input dir
     if (!dirs.length) {
-      dirs.push(Config.path)
+      dirs.push(path)
     }
     Logger.info('found dir(s)', Utils.readableDirs(dirs, Config.path))
     resolve('success')
   })
 }
 
-function getFinalPhotoName (photo) {
-  return Config.overwrite ? photo : photo.replace(/(\.j)/i, Config.marker + '$1')
+function markFilepath (filepath: PhotoPath): PhotoPath {
+  return filepath.replace(/(?<filepathWithoutExt>.*)\.(?<fileExt>[a-zA-Z]{2,4})$/, (...args) => {
+    const { filepathWithoutExt, fileExt } = args[args.length - 1]
+    return `${filepathWithoutExt}${Config.marker}.${fileExt}`
+  })
 }
 
-function compress (prefix, photo, method = 'ssim', failAlreadyCount = false): Promise<string> {
+function compress (prefix: string, photo: PhotoPath, method = 'ssim', failAlreadyCount = false): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!Config.compress) {
       Stats.compress.skip++
@@ -63,17 +67,8 @@ function compress (prefix, photo, method = 'ssim', failAlreadyCount = false): Pr
       methodToUse = 'ssim'
     }
     let message = 'compressing via ' + methodToUse
-    // photo = photo.replace(/\\/g, '/')
-    if (photo.indexOf(Config.marker) !== -1) {
-      Stats.compress.skip++
-      message = 'success (already processed)'
-      Logger.info({ prefix, message })
-      return resolve(message)
-    }
     Logger.info({ prefix, message })
-    const photoIn = photo
-    const photoOut = getFinalPhotoName(photo)
-    const command = jpegRecompress + ` --method ${methodToUse} "${photoIn}" "${photoOut}"`
+    const command = jpegRecompress + ` --method ${methodToUse} "${photo}" "${photo}"`
     // Logger.info('executing command :', command)
     exec(command, (err, stdout, stderr) => {
       if (err) {
@@ -112,7 +107,7 @@ function compress (prefix, photo, method = 'ssim', failAlreadyCount = false): Pr
   })
 }
 
-function zeroIfNeeded (date: number | string) {
+function zeroIfNeeded (date: number | string): string {
   let dateStr = date + ''
   if (dateStr.length === 1) {
     dateStr = '0' + dateStr
@@ -120,21 +115,20 @@ function zeroIfNeeded (date: number | string) {
   return dateStr
 }
 
-function getDateFromTags (prefix, tags): Date {
-  // Logger.info('  tags found :', tags)
-  /*  Logger.info('  ModifyDate :', tags.ModifyDate)
-   Logger.info('  CreateDate :', tags.CreateDate)
-   Logger.info('  DateCreated :', tags.DateCreated)
-   Logger.info('  TimeCreated :', tags.TimeCreated)
-   Logger.info('  DateTime :', tags.DateTime)
-   Logger.info('  DateTimeCreated :', tags.DateTimeCreated)
-   Logger.info('  DateTimeUTC :', tags.DateTimeUTC)
-   Logger.info('  DateTimeOriginal :', tags.DateTimeOriginal) */
-  // Logger.info('  FileCreateDate :', (tags as any).FileCreateDate)
-  if (tags.CreateDate) {
-    return new Date(tags.CreateDate + '')
-  }
-  const date = (tags as any).FileCreateDate
+function getDateFromTags (prefix: string, tags: ExifTool.Tags): Date | null {
+  // to avoid errors from ExifTool.Tags class instance
+  const data = JSON.parse(JSON.stringify(tags))
+  /*
+  Logger.info('  ModifyDate :', data.ModifyDate)
+  Logger.info('  CreateDate :', data.CreateDate)
+  Logger.info('  DateCreated :', data.DateCreated)
+  Logger.info('  TimeCreated :', data.TimeCreated)
+  Logger.info('  DateTime :', data.DateTime)
+  Logger.info('  DateTimeCreated :', data.DateTimeCreated)
+  Logger.info('  DateTimeUTC :', data.DateTimeUTC)
+  Logger.info('  DateTimeOriginal :', data.DateTimeOriginal)
+  */
+  const date = (data.CreateDate || tags.ModifyDate || tags.DateTimeOriginal)
   if (date) {
     const month = zeroIfNeeded(date.month)
     const day = zeroIfNeeded(date.day)
@@ -142,70 +136,44 @@ function getDateFromTags (prefix, tags): Date {
     const minute = zeroIfNeeded(date.minute)
     return new Date(date.year + '-' + month + '-' + day + 'T' + hour + ':' + minute)
   }
-  Logger.warn({ prefix, message: 'failed at finding original date' })
+  Logger.warn({ prefix, message: 'failed at finding original date in exif tags' })
   return null
 }
 
-function writeExifDate (prefix, filepath, newDateStr) {
-  return new Promise((resolve, reject) => {
-    // Logger.info({ prefix, message: 'writing new date : ' + newDateStr })
-    // Logger.info({ prefix, message: 'to file : ' + filepath })
-    exiftool
-      .write(filepath, { AllDates: newDateStr })
-      .then(() => {
-        // Logger.info('exiftool status after writing :', status) // status is undefined :'(
-        // resolve('success, updated photo date to : ' + newDateStr)
-        // Logger.success({ prefix, message: 'new date writen :)' })
-        Stats.dateFix.success++
-        // if write successful, delete _original file backup created by exif-tool
-        unlink(filepath + '_original', (err) => {
-          if (err) {
-            Stats.fileDeletion.fail++
-            Stats.fileDeletion.failedPaths.push(filepath + '_original')
-            Logger.error(err)
-          }
-        })
-        // because above unlink is async, let it work on is own and resolve now
-        resolve('success, updated photo date')
-      })
-      .catch(err => {
-        Logger.error(err)
-        Stats.dateFix.fail++
-        Stats.dateFix.failedPaths.push(filepath)
-        reject(new Error('failed at writing date exif'))
-      })
+async function deleteFile (filepath: PhotoPath): Promise<void> {
+  return Utils.deleteFile(filepath).catch(err => {
+    Stats.fileDeletion.fail++
+    Stats.fileDeletion.failedPaths.push(filepath)
+    Logger.error(err)
   })
 }
 
-function repairExif (prefix: string, filepath: string): Promise<string> {
+function repairExif (prefix: string, filepath: PhotoPath, exifRepairStat: Stat): Promise<string> {
   return new Promise((resolve, reject) => {
     let message = ''
-    if (process.platform === 'win32') {
+    const windows = process.platform === 'win32'
+    if (windows) {
       const command = exiftoolExe + ` -all= -tagsfromfile @ -all:all -unsafe -icc_profile "${filepath}"`
       // Logger.info('executing command :', command)
-      exec(command, (err, stdout, stderr) => {
+      exec(command, async (err) => {
         if (err) {
           // node couldn't execute the command
-          Stats.exifRepair.fail++
-          Stats.exifRepair.failedPaths.push(filepath)
-          reject(err)
+          exifRepairStat.fail++
+          exifRepairStat.failedPaths.push(filepath)
+          message = 'failed at executing command, ' + err.message
+          Logger.info({ prefix, message })
+          reject(message)
         } else {
           // if repair successful, delete _original file backup created by exif-tool
-          unlink(filepath + '_original', (error) => {
-            if (error) {
-              Logger.error(error)
-              Stats.fileDeletion.fail++
-              Stats.fileDeletion.failedPaths.push(filepath + '_original')
-            }
-          })
-          Stats.exifRepair.success++
+          deleteFile(filepath + '_original')
+          exifRepairStat.success++
           message = 'success, all tags fixed !'
           Logger.success({ prefix, message })
           resolve(message)
         }
       })
     } else {
-      Stats.exifRepair.skip++
+      exifRepairStat.skip++
       message = 'non-windows systems are not yet ready to repair exif'
       Logger.info({ prefix, message })
       resolve('success, ' + message)
@@ -213,74 +181,86 @@ function repairExif (prefix: string, filepath: string): Promise<string> {
   })
 }
 
-function fixExifDate (prefix: string, photo: string, dir: DirInfos): Promise<string> {
+function fixExifDate (prefix: string, filepath: PhotoPath, dir: DirInfos, dateFixStat: Stat, exiftool: ExifTool.ExifTool): Promise<string> {
   return new Promise((resolve, reject) => {
-    if (!dir.year && !dir.month) {
-      Stats.dateFix.skip++
+    if (dir.year === -1 || dir.month === -1) {
+      dateFixStat.skip++
       return resolve('cannot fix exif date without year and month')
     }
-    const filepath = getFinalPhotoName(photo)
     exiftool.read(filepath)
       .then((tags: ExifTool.Tags) => getDateFromTags(prefix, tags))
-      .then(originalDate => {
-        const newDate = new Date(originalDate)
+      .then(async (originalDate) => {
+        const newDate = new Date(originalDate || '')
         const year = newDate.getFullYear()
         const month = newDate.getMonth() + 1
         let doRewrite = false
         if (originalDate) {
-          Stats.readDate.success++
           Logger.info({ prefix, message: 'original date found : ' + dateToIsoString(originalDate, true).split('T')[0] })
-          if (dir.year !== null && year !== dir.year) {
+          if (year !== dir.year) {
             Logger.warn({ prefix, message: 'fixing photo year "' + year + '" => "' + dir.year + '"' })
             newDate.setFullYear(dir.year)
             newDate.setFullYear(dir.year) // this is intended, see bug 1 at the bottom of this file
             doRewrite = true
           }
-          if (dir.month !== null && month !== dir.month) {
+          if (month !== dir.month) {
             Logger.warn({ prefix, message: 'fixing photo month "' + month + '" => "' + dir.month + '"' })
             newDate.setMonth(dir.month - 1)
             newDate.setMonth(dir.month - 1) // this is intended, see bug 1 at the bottom of this file
             doRewrite = true
           }
         } else {
-          Stats.readDate.fail++
-          Stats.readDate.failedPaths.push(filepath)
           doRewrite = true
-          if (dir.year !== null) {
+          if (dir.year !== -1) {
             newDate.setFullYear(dir.year)
             newDate.setFullYear(dir.year) // this is intended, see bug 1 at the bottom of this file
           }
-          if (dir.month !== null) {
+          if (dir.month !== -1) {
             newDate.setMonth(dir.month - 1)
             newDate.setMonth(dir.month - 1) // this is intended, see bug 1 at the bottom of this file
           }
         }
-        if (doRewrite) {
-          const newDateStr = dateToIsoString(newDate, true)
-          // Logger.warn({ prefix, message: 'USING static date for testing purpose' })
-          // const newDateStr = '2016-02-06T16:56:00'
-          Logger.info({ prefix, message: 'new date will be : ' + newDateStr })
-          if (originalDate) {
-            Logger.info({ prefix, message: 'instead of       : ' + dateToIsoString(originalDate, true) })
-          }
-          writeExifDate(prefix, filepath, newDateStr)
-            .then(r => resolve(r.toString()))
-            .catch(r => reject(r.toString()))
-        } else {
-          Stats.dateFix.skip++
-          resolve('success, date is good')
+        if (!doRewrite) {
+          dateFixStat.skip++
+          return resolve('success, date is good')
         }
+        const newDateStr = dateToIsoString(newDate, true)
+        // Logger.warn({ prefix, message: 'USING mock date for testing purpose' })
+        // const newDateStr = '2016-02-06T16:56:00'
+        Logger.info({ prefix, message: 'new date will be : ' + newDateStr })
+        if (originalDate) {
+          Logger.info({ prefix, message: 'instead of       : ' + dateToIsoString(originalDate, true) })
+        }
+        await exiftool.write(filepath, { AllDates: newDateStr }).catch(() => { throw new Error('failed at writing exif') })
+        deleteFile(filepath + '_original') // avoid awaiting file deletion because it's not critical
+        dateFixStat.success++
+        const message = 'success, updated photo date'
+        Logger.info({ prefix, message })
+        resolve(message)
       })
-      .catch(err => {
-        Stats.dateFix.fail++
-        Stats.dateFix.failedPaths.push(photo)
+      .catch((err: Error) => {
+        dateFixStat.fail++
+        dateFixStat.failedPaths.push(filepath)
         Logger.error(err)
-        reject(new Error('failed at reading exif'))
+        reject(err)
       })
   })
 }
 
-async function checkPhotos (photos: PhotoSet, dir: DirInfos): Promise<string> {
+async function createCopy (filepath: PhotoPath, finalPhotoPath: PhotoPath): Promise<boolean> {
+  return Utils.copyFile(filepath, finalPhotoPath, true)
+    .then(() => {
+      Stats.fileCopy.success++
+      return true
+    })
+    .catch(err => {
+      Stats.fileCopy.fail++
+      Stats.fileCopy.failedPaths.push(filepath)
+      Logger.error(err)
+      return false
+    })
+}
+
+async function checkPhotos (photos: PhotoSet, dir: DirInfos, exiftool: ExifTool.ExifTool): Promise<string> {
   let count = photos.length
   if (count > 1) {
     Logger.info('found', count, 'photos in dir "' + dir.name + '"')
@@ -293,17 +273,49 @@ async function checkPhotos (photos: PhotoSet, dir: DirInfos): Promise<string> {
     count = 1
   }
   let bar = null
-  if (!Config.verbose) {
+  if (!Config.verbose && !Config.silent) {
     bar = new ProgressBar('[:bar] processing folder : ' + dir.name, {
       complete: '=',
       incomplete: ' ',
       total: count,
-      width: 40
+      width: 40,
     })
   }
   // Logger.info(photos)
   for (let i = 0; i < count; i++) {
-    const photo = photos[i]
+    let photo = photos[i]
+
+    if (!Config.overwrite) {
+      const markedPhotoPath = markFilepath(photo)
+      const markedPhotoExists = await Utils.fileExists(markedPhotoPath)
+      if (markedPhotoExists) {
+        // Logger.log('Exists ?', markedPhotoExists, markedPhotoPath)
+        if (Config.reArchive) {
+          const copySuccess = await createCopy(photo, markedPhotoPath)
+          if (copySuccess) {
+            photo = markedPhotoPath
+          } else {
+            Stats.photoProcess.skip++
+            Logger.error('No overwrite && re-archive but cannot a new copy, skipping process for this photo...')
+            continue
+          }
+        } else {
+          Stats.photoProcess.skip++
+          Logger.info('No overwrite && no re-archive && archive exists, skipping process for this photo...')
+          continue
+        }
+      } else {
+        const copySuccess = await createCopy(photo, markedPhotoPath)
+        if (copySuccess) {
+          photo = markedPhotoPath
+        } else {
+          Stats.photoProcess.skip++
+          Logger.error('No overwrite but cannot a new copy, skipping process for this photo...')
+          continue
+        }
+      }
+    }
+
     let name = basename(photo)
     if (name.length > 20) {
       name = name.substr(0, 20) + '...'
@@ -313,17 +325,22 @@ async function checkPhotos (photos: PhotoSet, dir: DirInfos): Promise<string> {
     if (bar) {
       bar.tick()
     }
-    Stats.photoProcess.count++
+    Stats.photoProcess.success++
     Logger.info('processing photo', num, '(' + name + ')')
     await compress(prefix, photo, 'smallfry')
       .catch(error => {
         if (error.message.includes('Command failed')) {
           // sometimes smallfry fail where ssim works
-          Logger.warn({ prefix, message: 'smallfry compression failed on "' + photo + '", trying ssim...' })
+          Logger.info({ prefix, message: 'smallfry compression failed on "' + photo + '", trying ssim...' })
           return compress(prefix, photo, 'ssim', true)
         } else {
           throw error
         }
+      })
+      .catch(error => {
+        const message = 'smallfry && ssim compressions both failed on "' + photo + '" : ' + error.message
+        Logger.info(message)
+        return message
       })
       .then(message => {
         const notAlreadyProcessed = !message.includes('already processed')
@@ -331,20 +348,31 @@ async function checkPhotos (photos: PhotoSet, dir: DirInfos): Promise<string> {
         const notAvoidingCompression = !message.includes('avoiding compression')
         // avoid repairing exif for no reasons
         if (notAlreadyProcessed && notAborted && notAvoidingCompression) {
-          return repairExif(prefix, photo)
+          return repairExif(prefix, photo, Stats.exifRepair1)
         } else {
-          Stats.exifRepair.skip++
+          Stats.exifRepair1.skip++
         }
         return message
       })
-      .then(() => fixExifDate(prefix, photo, dir))
+      .catch(error => {
+        Stats.dateFix1.skip++
+        throw error
+      })
+      .then(() => fixExifDate(prefix, photo, dir, Stats.dateFix1, exiftool))
+      .then(() => {
+        Stats.exifRepair2.skip++
+        Stats.dateFix2.skip++
+      })
       .catch(message => {
         if (!message.includes || message.includes('failed at writing date exif')) {
           // repair exif of failed date fix files
           Logger.info({ prefix, message: 'exif fix failed, repairing exif & try again' })
-          return repairExif(prefix, photo)
-            .then(() => fixExifDate(prefix, photo, dir))
+          return repairExif(prefix, photo, Stats.exifRepair2)
+            .then(() => fixExifDate(prefix, photo, dir, Stats.dateFix2, exiftool))
             .catch(err => Logger.error({ prefix, message: err }))
+        } else {
+          Stats.exifRepair2.skip++
+          Stats.dateFix2.skip++
         }
         return message
       })
@@ -357,15 +385,16 @@ async function checkPhotos (photos: PhotoSet, dir: DirInfos): Promise<string> {
   return Promise.resolve('check photos done in dir "' + dir.name + '"')
 }
 
-function checkNextDir (): Promise<string> {
+async function checkNextDir (exiftool: ExifTool.ExifTool): Promise<string> {
   if (!dirs.length) {
-    return Promise.resolve('no more directories to check')
+    return 'no more directories to check'
   }
   // extract first
   // full path
-  const dir = dirs.shift()
+  const dir = dirs.shift() || ''
   // directory/folder name
   const dirName = basename(dir)
+  const oDir: DirInfos = { name: dirName, year: -1, month: -1 }
   Logger.info('reading dir "' + dirName + '"')
   const dateMatches = dirName.match(/(\d{4})-(\d{2})/)
   let year = null
@@ -375,78 +404,65 @@ function checkNextDir (): Promise<string> {
     Stats.readDir.failedPaths.push(dir)
     Logger.warn('failed at detecting year & month in "' + dir + '"')
   } else {
-    let failed = false
-
     year = parseInt(dateMatches[1], 10)
-    // too old or too futuristic :p
-    if (year < 1000 || year > 3000) {
-      Logger.error('detected year out of range : "' + year + '"')
-      failed = true
+    if (year < 1000 || year > 3000) { // too old or too futuristic :p
+      Logger.info('detected year out of range : "' + year + '"')
+      year = -1
       Stats.readDir.fail++
       Stats.readDir.failedPaths.push(dir)
     } else {
       Logger.info('detected year "' + year + '"')
     }
-
     month = parseInt(dateMatches[2], 10)
-    if (month !== 0) {
-      if (month < 0 || month > 12) {
-        Logger.error('detected month out of range : "' + month + '"')
-        // avoiding duplicate records
-        if (!failed) {
-          Stats.readDir.fail++
-          Stats.readDir.failedPaths.push(dir)
-        }
-      } else {
-        Logger.info('detected month "' + month + '"')
+    if (month < 0 || month > 12) {
+      Logger.info('detected month out of range : "' + month + '"')
+      month = -1
+      if (year !== -1) { // avoiding duplicate records
+        Stats.readDir.fail++
+        Stats.readDir.failedPaths.push(dir)
       }
     } else {
-      month = null
+      Logger.info('detected month "' + month + '"')
     }
+    if (year !== -1 && month !== -1) {
+      Stats.readDir.success++
+    }
+    oDir.year = year
+    oDir.month = month
   }
-  const oDir: DirInfos = { name: dirName, year, month }
-  const include = join(dir, '**/*.(jpg|jpeg)')
-  const exclude = '!' + join(dir, '**/*' + Config.marker + '.(jpg|jpeg)')
+  const include = posix.join(dir, '**/*.(jpg|jpeg)')
+  const exclude = '!' + posix.join(dir, '**/*' + Config.marker + '.(jpg|jpeg)')
   const rules = [include, exclude]
   // Logger.info('search files with rules', rules)
-  return globby(rules, { nocase: true })
-    .then((photos: PhotoSet) => checkPhotos(photos, oDir))
-    .then(status => {
-      Logger.info(status)
-      if (Config.processOne && Stats.photoProcess.count > 0) {
-        return 'success, processed one photo only'
-      }
-      return checkNextDir()
-    })
-    .catch(err => {
-      Logger.error(err)
-      return err.message
-    })
+  try {
+    const photos = await globby(rules)
+    const status = await checkPhotos(photos, oDir, exiftool)
+    Logger.info(status)
+    if (Config.processOne && Stats.photoProcess.total > 0) {
+      return 'success, processed one photo only'
+    }
+    return checkNextDir(exiftool)
+  } catch (err) {
+    Logger.error(err)
+    return err.message
+  }
 }
 
-function killExifTool () {
-  Logger.info('killing exif tool instance...')
-  exiftool.end()
-  return Promise.resolve('success, does not wait for exif-tool killing')
-}
-
-function startProcess () {
+export async function startProcess (): Promise<void> {
   const app = 'Photo Archiver (' + process.platform + ')'
+  const exiftool = new ExifTool.ExifTool() // { minorErrorsRegExp: /error|warning/i } shows all errors
   Logger.start(app)
   Stats.start()
-  Config.init()
-    .then(() => getDirs())
-    .then(() => checkNextDir())
+  return getDirs()
+    .then(() => checkNextDir(exiftool))
     .then(status => Logger.info(status))
     .catch(err => Logger.error(err))
     .then(() => Stats.stop())
     .catch(err => Logger.error(err))
-    .then(() => killExifTool())
+    .then(() => exiftool.end())
     .catch(err => Logger.error(err))
     .then(() => Logger.complete(app))
 }
-
-startProcess()
 
 // Bug 1
 /*

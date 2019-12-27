@@ -1,11 +1,32 @@
 {
   "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "alwaysStrict": true,
+    "declaration": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "lib": [
+      "es5",
+      "es6",
+      "es7",
+      "esnext.asynciterable"
+    ],
     "module": "commonjs",
-    "target": "es2016",
-    "jsx": "preserve"
+    "outDir": "dist",
+    "rootDir": ".",
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "es6"
   },
   "exclude": [
     "node_modules",
-    "**/node_modules/*"
+    "**/*.spec.ts",
+    "dist"
+  ],
+  "include": [
+    "src/**/*.ts",
+    "tests/**/*.ts",
+    "*.js"
   ]
 }

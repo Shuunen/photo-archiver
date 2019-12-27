@@ -1,7 +1,9 @@
+/* global PhotoPath, PhotoSet */
+
 class DirInfos {
-  name: string // folder name
-  year: number
-  month: number
+  name = '' // folder name
+  year = -1
+  month = -1
 }
 
 type PhotoPath = string
