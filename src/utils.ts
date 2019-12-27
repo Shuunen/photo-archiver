@@ -1,4 +1,4 @@
-import chalk from 'chalk'
+import * as chalk from 'chalk'
 import { copyFile, stat, unlink } from 'fs'
 import { promisify } from 'util'
 import Config from './config'
