@@ -12,8 +12,6 @@ import Stats from './stats'
 import { DirInfos, PhotoPath, PhotoSet } from './types' // eslint-disable-line no-unused-vars
 import Utils from './utils'
 
-// Here may not be the best place to instantiate ExifTool
-const exiftool = new ExifTool.ExifTool() // { minorErrorsRegExp: /error|warning/i } shows all errors
 const exiftoolExe = pathResolve('node_modules/exiftool-vendored.exe/bin/exiftool')
 const jpegRecompress = pathResolve('bin/jpeg-recompress')
 const dirs: PhotoSet = []
@@ -183,7 +181,7 @@ function repairExif (prefix: string, filepath: PhotoPath, exifRepairStat: Stat):
   })
 }
 
-function fixExifDate (prefix: string, filepath: PhotoPath, dir: DirInfos, dateFixStat: Stat): Promise<string> {
+function fixExifDate (prefix: string, filepath: PhotoPath, dir: DirInfos, dateFixStat: Stat, exiftool: ExifTool.ExifTool): Promise<string> {
   return new Promise((resolve, reject) => {
     if (dir.year === -1 || dir.month === -1) {
       dateFixStat.skip++
@@ -262,7 +260,7 @@ async function createCopy (filepath: PhotoPath, finalPhotoPath: PhotoPath): Prom
     })
 }
 
-async function checkPhotos (photos: PhotoSet, dir: DirInfos): Promise<string> {
+async function checkPhotos (photos: PhotoSet, dir: DirInfos, exiftool: ExifTool.ExifTool): Promise<string> {
   let count = photos.length
   if (count > 1) {
     Logger.info('found', count, 'photos in dir "' + dir.name + '"')
@@ -360,7 +358,7 @@ async function checkPhotos (photos: PhotoSet, dir: DirInfos): Promise<string> {
         Stats.dateFix1.skip++
         throw error
       })
-      .then(() => fixExifDate(prefix, photo, dir, Stats.dateFix1))
+      .then(() => fixExifDate(prefix, photo, dir, Stats.dateFix1, exiftool))
       .then(() => {
         Stats.exifRepair2.skip++
         Stats.dateFix2.skip++
@@ -370,7 +368,7 @@ async function checkPhotos (photos: PhotoSet, dir: DirInfos): Promise<string> {
           // repair exif of failed date fix files
           Logger.info({ prefix, message: 'exif fix failed, repairing exif & try again' })
           return repairExif(prefix, photo, Stats.exifRepair2)
-            .then(() => fixExifDate(prefix, photo, dir, Stats.dateFix2))
+            .then(() => fixExifDate(prefix, photo, dir, Stats.dateFix2, exiftool))
             .catch(err => Logger.error({ prefix, message: err }))
         } else {
           Stats.exifRepair2.skip++
@@ -387,7 +385,7 @@ async function checkPhotos (photos: PhotoSet, dir: DirInfos): Promise<string> {
   return Promise.resolve('check photos done in dir "' + dir.name + '"')
 }
 
-async function checkNextDir (): Promise<string> {
+async function checkNextDir (exiftool: ExifTool.ExifTool): Promise<string> {
   if (!dirs.length) {
     return 'no more directories to check'
   }
@@ -438,38 +436,30 @@ async function checkNextDir (): Promise<string> {
   // Logger.info('search files with rules', rules)
   try {
     const photos = await globby(rules)
-    const status = await checkPhotos(photos, oDir)
+    const status = await checkPhotos(photos, oDir, exiftool)
     Logger.info(status)
     if (Config.processOne && Stats.photoProcess.total > 0) {
       return 'success, processed one photo only'
     }
-    return checkNextDir()
+    return checkNextDir(exiftool)
   } catch (err) {
     Logger.error(err)
     return err.message
   }
 }
 
-export async function killExifTool (): Promise<void> {
-  Logger.info('killing exif tool instance...')
-  console.log('killing exif tool instance...')
-  return exiftool.end().then(() => console.log('exif tool instance KILLED ?!')).catch((err: Error) => {
-    console.error(err)
-    console.log('exif tool instance NOT YET KILLED ?!')
-  })
-}
-
 export async function startProcess (): Promise<void> {
   const app = 'Photo Archiver (' + process.platform + ')'
+  const exiftool = new ExifTool.ExifTool() // { minorErrorsRegExp: /error|warning/i } shows all errors
   Logger.start(app)
   Stats.start()
   return getDirs()
-    .then(() => checkNextDir())
+    .then(() => checkNextDir(exiftool))
     .then(status => Logger.info(status))
     .catch(err => Logger.error(err))
     .then(() => Stats.stop())
     .catch(err => Logger.error(err))
-    .then(() => killExifTool())
+    .then(() => exiftool.end())
     .catch(err => Logger.error(err))
     .then(() => Logger.complete(app))
 }
