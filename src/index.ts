@@ -2,7 +2,7 @@ import { exec } from 'child_process'
 import * as ExifTool from 'exiftool-vendored'
 import { readdirSync, statSync } from 'fs'
 import * as globby from 'globby'
-import { basename, join, resolve as pathResolve } from 'path'
+import { basename, posix, resolve as pathResolve } from 'path'
 import * as ProgressBar from 'progress'
 import { dateToIsoString } from 'shuutils'
 import Config from './config'
@@ -31,12 +31,12 @@ function getDirs (): Promise<string> {
     const path = Config.path || '.'
     getDirectories(path).map((dir) => {
       // dir will be successively 2013, 2014,...
-      const subDir = join(path, dir)
+      const subDir = posix.join(path, dir)
       Logger.info('dir', dir)
       Logger.info('subDir', subDir)
       if (dir.length === 4) {
         // like a year 2018 that contains sub-folders
-        getDirectories(subDir).forEach((sub) => dirs.push(join(subDir, sub)))
+        getDirectories(subDir).forEach((sub) => dirs.push(posix.join(subDir, sub)))
       } else {
         dirs.push(subDir)
       }
@@ -385,9 +385,9 @@ async function checkPhotos (photos: PhotoSet, dir: DirInfos): Promise<string> {
   return Promise.resolve('check photos done in dir "' + dir.name + '"')
 }
 
-function checkNextDir (): Promise<string> {
+async function checkNextDir (): Promise<string> {
   if (!dirs.length) {
-    return Promise.resolve('no more directories to check')
+    return 'no more directories to check'
   }
   // extract first
   // full path
@@ -430,23 +430,22 @@ function checkNextDir (): Promise<string> {
     oDir.year = year
     oDir.month = month
   }
-  const include = join(dir, '**/*.(jpg|jpeg)')
-  const exclude = '!' + join(dir, '**/*' + Config.marker + '.(jpg|jpeg)')
+  const include = posix.join(dir, '**/*.(jpg|jpeg)')
+  const exclude = '!' + posix.join(dir, '**/*' + Config.marker + '.(jpg|jpeg)')
   const rules = [include, exclude]
   // Logger.info('search files with rules', rules)
-  return globby(rules)
-    .then((photos: PhotoSet) => checkPhotos(photos, oDir))
-    .then(status => {
-      Logger.info(status)
-      if (Config.processOne && Stats.photoProcess.total > 0) {
-        return 'success, processed one photo only'
-      }
-      return checkNextDir()
-    })
-    .catch(err => {
-      Logger.error(err)
-      return err.message
-    })
+  try {
+    const photos = await globby(rules)
+    const status = await checkPhotos(photos, oDir)
+    Logger.info(status)
+    if (Config.processOne && Stats.photoProcess.total > 0) {
+      return 'success, processed one photo only'
+    }
+    return checkNextDir()
+  } catch (err) {
+    Logger.error(err)
+    return err.message
+  }
 }
 
 function killExifTool (): Promise<string> {
@@ -470,7 +469,7 @@ export async function startProcess (): Promise<void> {
     .then(() => Logger.complete(app))
 }
 
-Config.init().then(() => startProcess()).catch((err: Error) => Logger.error(err))
+Config.init().then(() => startProcess()).catch((err: Error) => console.error(err))
 
 // Bug 1
 /*

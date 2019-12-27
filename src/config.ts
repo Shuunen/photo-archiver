@@ -1,6 +1,7 @@
 import * as inquirer from 'inquirer'
 import * as minimist from 'minimist'
-const currentPath = process.cwd()
+import { posix } from 'path'
+const currentPath = process.cwd().split('\\').join('/')
 
 interface ConfigOptions {
   compress?: boolean
@@ -20,7 +21,7 @@ export const defaults: ConfigOptions = {
   forceSsim: false,
   marker: '-archived', // my-photo.jpg => my-photo-archived.jpg
   overwrite: false, // if true replace original photos, else new files will be generated (using config marker)
-  path: currentPath + '/tests',
+  path: posix.join(currentPath, '/tests'),
   processOne: false,
   questions: true,
   reArchive: true, // true : will replace previously archived files
