@@ -1,16 +1,173 @@
-╔════════════════╤═════════╤═════════╤═════════╤══════════════════════════════════════════════════════════════════════════════════╗
-║                │ Success │  Skip   │  Fail   │ Fail photo and dir paths                                                         ║
-╟────────────────┼─────────┼─────────┼─────────┼──────────────────────────────────────────────────────────────────────────────────╢
-║     Compressed │   4     │   2     │   3     │ C:/path/tests/2018/2018-13_Test pics/noexif.jpg &                                 ║
-║                │         │         │         │ C:/path/tests/2018/2018-13_Test pics/truncated.jpg &                              ║
-║                │         │         │         │ C:/path/tests/2018/2018-13_Test pics/中文.jpg                                     ║
-╟────────────────┼─────────┼─────────┼─────────┼──────────────────────────────────────────────────────────────────────────────────╢
-║     Date fixed │   6     │   0     │   1     │ C:/path/tests/2018/2018-13_Test pics/noexif.jpg                                   ║
-╟────────────────┼─────────┼─────────┼─────────┼──────────────────────────────────────────────────────────────────────────────────╢
-║  Exif repaired │   5     │   2     │   2     │ C:/path/tests/2018/2018-13_Test pics/truncated.jpg &                              ║
-║                │         │         │         │ C:/path/tests/2018/2018-13_Test pics/中文.jpg                                     ║
-╟────────────────┼─────────┼─────────┼─────────┼──────────────────────────────────────────────────────────────────────────────────╢
-║ File deletions │   0     │   0     │   1     │ C:/path/tests/2018/2018-13_Test pics/noexif.jpg_original                          ║
-╟────────────────┼─────────┼─────────┼─────────┼──────────────────────────────────────────────────────────────────────────────────╢
-║       Dir read │   0     │   0     │   1     │ C:/path/tests/2018/2018-13_Test pics                                              ║
-╚════════════════╧═════════╧═════════╧═════════╧══════════════════════════════════════════════════════════════════════════════════╝
+►  start     Photo Archiver (win32)
+i  info      [ 'dir', '2018' ]
+i  info      [ 'subDir',
+  'C:\\Users\\huei\\Projects\\photo-archiver\\tests\\2018' ]
+i  info      [ 'found dir(s)',
+  'C:/Users/huei/Projects/photo-archiver/tests/2018/2018-04_Album name & C:/Users/huei/Projects/photo-archiver/tests/2018/2018-12_Test pics & C:/Users/huei/Projects/photo-archiver/tests/2018/2018-13_Unreachable pics' ]
+i  info      [ 'reading dir "2018-04_Album name"' ]
+i  info      [ 'detected year "2018"' ]
+i  info      [ 'detected month "4"' ]
+i  info      [ 'processing photo', '1', '(P5120075-archived.JP...)' ]
+i  info      [ { prefix: '[photo 1]', message: 'compressing via smallfry' } ]
+i  info      [ { prefix: '[photo 1]', message: 'success (already processed)' } ]
+i  info      [ { prefix: '[photo 1]',
+    message: 'original date found : 2018-05-12' } ]
+[photo 1] ‼  warning   fixing photo month "5" => "4"
+i  info      [ { prefix: '[photo 1]',
+    message: 'new date will be : 2018-04-12T16:50:00.000' } ]
+i  info      [ { prefix: '[photo 1]',
+    message: 'instead of       : 2018-05-12T16:50:00.000' } ]
+i  info      [ { prefix: '[photo 1]', message: 'success, updated photo date' } ]
+i  info      [ { prefix: '[photo 1]', message: undefined } ]
+i  info      [ 'check photos done in dir "2018-04_Album name"' ]
+i  info      [ 'reading dir "2018-12_Test pics"' ]
+i  info      [ 'detected year "2018"' ]
+i  info      [ 'detected month "12"' ]
+i  info      [ 'found', 8, 'photos in dir "2018-12_Test pics"' ]
+i  info      [ 'processing photo', '1', '(bad-exif-ifd-archive...)' ]
+i  info      [ { prefix: '[photo 1]', message: 'compressing via smallfry' } ]
+[photo 1] √  success   success, compressed
+[photo 1] √  success   success, all tags fixed !
+i  info      [ { prefix: '[photo 1]',
+    message: 'original date found : 2015-01-23' } ]
+[photo 1] ‼  warning   fixing photo year "2015" => "2018"
+[photo 1] ‼  warning   fixing photo month "1" => "12"
+i  info      [ { prefix: '[photo 1]',
+    message: 'new date will be : 2018-12-23T12:07:00.000' } ]
+i  info      [ { prefix: '[photo 1]',
+    message: 'instead of       : 2015-01-23T12:07:00.000' } ]
+i  info      [ { prefix: '[photo 1]', message: 'success, updated photo date' } ]
+i  info      [ { prefix: '[photo 1]', message: undefined } ]
+i  info      [ 'processing photo', '2', '(ExifTool-archived.jp...)' ]
+i  info      [ { prefix: '[photo 2]', message: 'compressing via smallfry' } ]
+[photo 2] √  success   success, compressed
+[photo 2] √  success   success, all tags fixed !
+i  info      [ { prefix: '[photo 2]',
+    message: 'original date found : 2001-05-19' } ]
+[photo 2] ‼  warning   fixing photo year "2001" => "2018"
+[photo 2] ‼  warning   fixing photo month "5" => "12"
+i  info      [ { prefix: '[photo 2]',
+    message: 'new date will be : 2018-12-19T18:36:00.000' } ]
+i  info      [ { prefix: '[photo 2]',
+    message: 'instead of       : 2001-05-19T18:36:00.000' } ]
+i  info      [ { prefix: '[photo 2]', message: 'success, updated photo date' } ]
+i  info      [ { prefix: '[photo 2]', message: undefined } ]
+i  info      [ 'processing photo', '3', '(img-archived.jpg)' ]
+i  info      [ { prefix: '[photo 3]', message: 'compressing via smallfry' } ]
+[photo 3] √  success   success, compressed
+[photo 3] √  success   success, all tags fixed !
+i  info      [ { prefix: '[photo 3]',
+    message: 'original date found : 2016-08-12' } ]
+[photo 3] ‼  warning   fixing photo year "2016" => "2018"
+[photo 3] ‼  warning   fixing photo month "8" => "12"
+i  info      [ { prefix: '[photo 3]',
+    message: 'new date will be : 2018-12-12T13:28:00.000' } ]
+i  info      [ { prefix: '[photo 3]',
+    message: 'instead of       : 2016-08-12T13:28:00.000' } ]
+i  info      [ { prefix: '[photo 3]', message: 'success, updated photo date' } ]
+i  info      [ { prefix: '[photo 3]', message: undefined } ]
+i  info      [ 'processing photo', '4', '(problematic-archived...)' ]
+i  info      [ { prefix: '[photo 4]', message: 'compressing via smallfry' } ]
+i  info      [ { prefix: '[photo 4]', message: 'success (already processed)' } ]
+i  info      [ { prefix: '[photo 4]',
+    message: 'original date found : 2010-02-17' } ]
+[photo 4] ‼  warning   fixing photo year "2010" => "2018"
+[photo 4] ‼  warning   fixing photo month "2" => "12"
+i  info      [ { prefix: '[photo 4]',
+    message: 'new date will be : 2018-12-17T22:45:00.000' } ]
+i  info      [ { prefix: '[photo 4]',
+    message: 'instead of       : 2010-02-17T22:45:00.000' } ]
+i  info      [ { prefix: '[photo 4]', message: 'success, updated photo date' } ]
+i  info      [ { prefix: '[photo 4]', message: undefined } ]
+i  info      [ 'processing photo', '5', '(noexif-archived.jpg)' ]
+i  info      [ { prefix: '[photo 5]', message: 'compressing via smallfry' } ]
+i  info      [ { prefix: '[photo 5]',
+    message:
+     'smallfry compression failed on "C:/Users/huei/Projects/photo-archiver/tests/2018/2018-12_Test pics/noexif-archived.jpg", trying ssim...' } ]
+i  info      [ { prefix: '[photo 5]', message: 'compressing via ssim' } ]
+i  info      [ 'smallfry && ssim compressions both failed on "C:/Users/huei/Projects/photo-archiver/tests/2018/2018-12_Test pics/noexif-archived.jpg" : Command failed: C:\\Users\\huei\\Projects\\photo-archiver\\bin\\jpeg-recompress --method ssim "C:/Users/huei/Projects/photo-archiver/tests/2018/2018-12_Test pics/noexif-archived.jpg" "C:/Users/huei/Projects/photo-archiver/tests/2018/2018-12_Test pics/noexif-archived.jpg"\nMetadata size is 0kb\r\nssim at q=67 (40 - 95): 1.000000\r\nssim at q=53 (40 - 66): 1.000000\r\nssim at q=46 (40 - 52): 1.000000\r\nssim at q=42 (40 - 45): 0.999992\r\nssim at q=40 (40 - 41): 1.000000\r\nFinal optimized ssim at q=40: 1.000000\r\nNew size is 148% of original (saved 0 kb)\r\njpeg-recompress: output file is larger than input, aborting!\r\n' ]
+[photo 5] √  success   success, all tags fixed !
+[photo 5] ‼  warning   failed at finding original date in exif tags
+i  info      [ { prefix: '[photo 5]',
+    message: 'new date will be : 2018-12-01T01:00:00.000' } ]
+i  info      [ { prefix: '[photo 5]', message: 'success, updated photo date' } ]
+i  info      [ { prefix: '[photo 5]', message: undefined } ]
+i  info      [ 'processing photo', '6', '(truncated-archived.j...)' ]
+i  info      [ { prefix: '[photo 6]', message: 'compressing via smallfry' } ]
+i  info      [ { prefix: '[photo 6]',
+    message:
+     'smallfry compression failed on "C:/Users/huei/Projects/photo-archiver/tests/2018/2018-12_Test pics/truncated-archived.jpg", trying ssim...' } ]
+i  info      [ { prefix: '[photo 6]', message: 'compressing via ssim' } ]
+i  info      [ 'smallfry && ssim compressions both failed on "C:/Users/huei/Projects/photo-archiver/tests/2018/2018-12_Test pics/truncated-archived.jpg" : Command failed: C:\\Users\\huei\\Projects\\photo-archiver\\bin\\jpeg-recompress --method ssim "C:/Users/huei/Projects/photo-archiver/tests/2018/2018-12_Test pics/truncated-archived.jpg" "C:/Users/huei/Projects/photo-archiver/tests/2018/2018-12_Test pics/truncated-archived.jpg"\nPremature end of JPEG file\r\nJPEG datastream contains no image\r\n' ]
+i  info      [ { prefix: '[photo 6]',
+    message:
+     'failed at executing command, Command failed: C:\\Users\\huei\\Projects\\photo-archiver\\node_modules\\exiftool-vendored.exe\\bin\\exiftool -all= -tagsfromfile @ -all:all -unsafe -icc_profile "C:/Users/huei/Projects/photo-archiver/tests/2018/2018-12_Test pics/truncated-archived.jpg"\nperl: warning: Setting locale failed.\r\nperl: warning: Please check that your locale settings:\r\n\tLC_ALL = "fr_FR.UTF-8",\r\n\tLANG = "fr_FR.UTF-8"\r\n    are supported and installed on your system.\r\nperl: warning: Falling back to the system default locale ("French_France.1252").\r\nWarning: JPEG format error - C:/Users/huei/Projects/photo-archiver/tests/2018/2018-12_Test pics/truncated-archived.jpg\r\nWarning: No writable tags set from C:/Users/huei/Projects/photo-archiver/tests/2018/2018-12_Test pics/truncated-archived.jpg\r\nError: Corrupted JPEG image - C:/Users/huei/Projects/photo-archiver/tests/2018/2018-12_Test pics/truncated-archived.jpg\r\n' } ]
+i  info      [ { prefix: '[photo 6]',
+    message:
+     'failed at executing command, Command failed: C:\\Users\\huei\\Projects\\photo-archiver\\node_modules\\exiftool-vendored.exe\\bin\\exiftool -all= -tagsfromfile @ -all:all -unsafe -icc_profile "C:/Users/huei/Projects/photo-archiver/tests/2018/2018-12_Test pics/truncated-archived.jpg"\nperl: warning: Setting locale failed.\r\nperl: warning: Please check that your locale settings:\r\n\tLC_ALL = "fr_FR.UTF-8",\r\n\tLANG = "fr_FR.UTF-8"\r\n    are supported and installed on your system.\r\nperl: warning: Falling back to the system default locale ("French_France.1252").\r\nWarning: JPEG format error - C:/Users/huei/Projects/photo-archiver/tests/2018/2018-12_Test pics/truncated-archived.jpg\r\nWarning: No writable tags set from C:/Users/huei/Projects/photo-archiver/tests/2018/2018-12_Test pics/truncated-archived.jpg\r\nError: Corrupted JPEG image - C:/Users/huei/Projects/photo-archiver/tests/2018/2018-12_Test pics/truncated-archived.jpg\r\n' } ]
+i  info      [ 'processing photo', '7', '(with_thumb-archived....)' ]
+i  info      [ { prefix: '[photo 7]', message: 'compressing via smallfry' } ]
+[photo 7] √  success   success, compressed
+[photo 7] √  success   success, all tags fixed !
+i  info      [ { prefix: '[photo 7]',
+    message: 'original date found : 2003-03-09' } ]
+[photo 7] ‼  warning   fixing photo year "2003" => "2018"
+[photo 7] ‼  warning   fixing photo month "3" => "12"
+i  info      [ { prefix: '[photo 7]',
+    message: 'new date will be : 2018-12-09T20:16:00.000' } ]
+i  info      [ { prefix: '[photo 7]',
+    message: 'instead of       : 2003-03-09T20:16:00.000' } ]
+i  info      [ { prefix: '[photo 7]', message: 'success, updated photo date' } ]
+i  info      [ { prefix: '[photo 7]', message: undefined } ]
+i  info      [ 'processing photo', '8', '(中文-archived.jpg)' ]
+i  info      [ { prefix: '[photo 8]', message: 'compressing via smallfry' } ]
+[photo 8] √  success   success, compressed
+[photo 8] √  success   success, all tags fixed !
+i  info      [ { prefix: '[photo 8]',
+    message: 'original date found : 2016-08-12' } ]
+[photo 8] ‼  warning   fixing photo year "2016" => "2018"
+[photo 8] ‼  warning   fixing photo month "8" => "12"
+i  info      [ { prefix: '[photo 8]',
+    message: 'new date will be : 2018-12-12T13:28:00.000' } ]
+i  info      [ { prefix: '[photo 8]',
+    message: 'instead of       : 2016-08-12T13:28:00.000' } ]
+i  info      [ { prefix: '[photo 8]', message: 'success, updated photo date' } ]
+i  info      [ { prefix: '[photo 8]', message: undefined } ]
+i  info      [ 'check photos done in dir "2018-12_Test pics"' ]
+i  info      [ 'reading dir "2018-13_Unreachable pics"' ]
+i  info      [ 'detected year "2018"' ]
+i  info      [ 'detected month out of range : "13"' ]
+i  info      [ 'processing photo', '1', '(fun-archived.jpg)' ]
+i  info      [ { prefix: '[photo 1]', message: 'compressing via smallfry' } ]
+i  info      [ { prefix: '[photo 1]', message: 'success (already processed)' } ]
+i  info      [ { prefix: '[photo 1]', message: undefined } ]
+i  info      [ 'check photos done in dir "2018-13_Unreachable pics"' ]
+i  info      [ 'no more directories to check' ]
+
+Found 10 photos, 10 has been processed & no photos has been skipped
+Spent an average of 921 milliseconds per photo
+The whole process took 9.2 seconds 
+
+╔═══════════════════╤═════════╤═════════╤═════════╤═════════╤══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║                   │ Success │  Skip   │  Fail   │ Total   │ Failing photo/directory paths                                                                                            ║
+╟───────────────────┼─────────┼─────────┼─────────┼─────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╢
+║  Photos processed │   10    │   0     │   0     │   10    │                                                                                                                          ║
+╟───────────────────┼─────────┼─────────┼─────────┼─────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╢
+║        Compressed │   5     │   3     │   2     │   10    │ C:/Users/huei/Projects/photo-archiver/tests/2018/2018-12_Test pics/noexif-archived.jpg &                                 ║
+║                   │         │         │         │         │ C:/Users/huei/Projects/photo-archiver/tests/2018/2018-12_Test pics/truncated-archived.jpg                                ║
+╟───────────────────┼─────────┼─────────┼─────────┼─────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╢
+║    Date fixed 1/2 │   8     │   2     │   0     │   10    │                                                                                                                          ║
+╟───────────────────┼─────────┼─────────┼─────────┼─────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╢
+║    Date fixed 2/2 │   0     │   10    │   0     │   10    │                                                                                                                          ║
+╟───────────────────┼─────────┼─────────┼─────────┼─────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╢
+║ Exif repaired 1/2 │   6     │   3     │   1     │   10    │ C:/Users/huei/Projects/photo-archiver/tests/2018/2018-12_Test pics/truncated-archived.jpg                                ║
+╟───────────────────┼─────────┼─────────┼─────────┼─────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╢
+║ Exif repaired 2/2 │   0     │   10    │   0     │   10    │                                                                                                                          ║
+╟───────────────────┼─────────┼─────────┼─────────┼─────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╢
+║    Dirname parsed │   2     │   0     │   1     │   3     │ C:/Users/huei/Projects/photo-archiver/tests/2018/2018-13_Unreachable pics                                                ║
+╚═══════════════════╧═════════╧═════════╧═════════╧═════════╧══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+‼  warning   un-parsable directories cannot have their photos date-fixed, you should fix these directory names.
+
+i  info      [ 'killing exif tool instance...' ]
+[×]  complete  Photo Archiver (win32)
