@@ -1,5 +1,5 @@
 
-import chalk from 'chalk'
+import * as chalk from 'chalk'
 import * as prettyMs from 'pretty-ms'
 import { getTimestampMs } from 'shuutils'
 import { ColumnConfig, table, TableUserConfig } from 'table' // eslint-disable-line no-unused-vars
@@ -80,11 +80,12 @@ class Stats {
     if (this.readDir.fail) {
       data.push(this.getMetricRow('Dirname parsed', this.readDir))
     }
-    const pathsColumn: ColumnConfig = { width: 120, wrapWord: true }
+    const firstColumn: ColumnConfig = { width: 20, alignment: 'right' }
     const countColumn: ColumnConfig = { width: 7 }
+    const pathsColumn: ColumnConfig = { width: 120, wrapWord: true }
     const opts: TableUserConfig = {
       columns: {
-        0: { alignment: 'right' },
+        0: firstColumn,
         1: countColumn,
         2: countColumn,
         3: countColumn,
@@ -93,7 +94,6 @@ class Stats {
       },
     }
     if (!Config.silent) {
-      // tslint:disable-next-line:no-console
       console.log(table(data, opts))
     }
     if (this.readDir.fail) {
