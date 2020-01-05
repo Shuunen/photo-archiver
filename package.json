@@ -5,7 +5,7 @@
     "chalk": "3.0.0",
     "exiftool-vendored": "9.5.0",
     "globby": "10.0.1",
-    "inquirer": "7.0.1",
+    "inquirer": "7.0.2",
     "minimist": "1.2.0",
     "pretty-ms": "5.1.0",
     "progress": "2.0.3",
