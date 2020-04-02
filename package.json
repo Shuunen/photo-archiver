@@ -2,7 +2,7 @@
   "author": "Romain Racamier-Lafon <romain.racamier@gmail.com>",
   "bugs": "https://github.com/Shuunen/photo-archiver/issues",
   "dependencies": {
-    "chalk": "3.0.0",
+    "chalk": "4.0.0",
     "exiftool-vendored": "9.5.0",
     "globby": "11.0.0",
     "inquirer": "7.1.0",
