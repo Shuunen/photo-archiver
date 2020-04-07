@@ -9,7 +9,7 @@
     "minimist": "1.2.5",
     "pretty-ms": "6.0.1",
     "progress": "2.0.3",
-    "shuutils": "3.4.0",
+    "shuutils": "4.0.0",
     "signale": "1.4.0",
     "table": "5.4.6",
     "typescript": "3.8.3"
