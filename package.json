@@ -4,7 +4,7 @@
   "dependencies": {
     "chalk": "4.0.0",
     "exiftool-vendored": "9.5.0",
-    "globby": "11.0.0",
+    "globby": "11.0.1",
     "inquirer": "7.1.0",
     "minimist": "1.2.5",
     "pretty-ms": "6.0.1",
