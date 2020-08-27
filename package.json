@@ -5,7 +5,7 @@
     "chalk": "4.0.0",
     "exiftool-vendored": "9.5.0",
     "globby": "11.0.0",
-    "inquirer": "7.1.0",
+    "inquirer": "7.3.3",
     "minimist": "1.2.5",
     "pretty-ms": "6.0.1",
     "progress": "2.0.3",
@@ -17,7 +17,7 @@
   "description": "A personal photo archiver",
   "devDependencies": {
     "@types/globby": "9.1.0",
-    "@types/inquirer": "6.5.0",
+    "@types/inquirer": "7.3.1",
     "@types/jest": "25.2.1",
     "@types/minimist": "1.2.0",
     "@types/node": "13.11.0",
