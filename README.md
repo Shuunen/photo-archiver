@@ -25,7 +25,7 @@ Then you'll be guided :)
 
 ## Todo
 
-- [ ] bring back `npm run check` into the `ci` npm task when `repo-checker` will release a fix for TS project & eslint conf
+- [ ] try MozJpeg
 
 ## Thanks
 

@@ -38,7 +38,7 @@
     "eslint-plugin-unicorn": "23.0.0",
     "jest": "26.6.3",
     "nodemon": "2.0.6",
-    "repo-check": "1.14.1",
+    "repo-check": "1.14.2",
     "ts-jest": "26.4.4",
     "ts-node": "9.0.0"
   },
@@ -64,7 +64,7 @@
   },
   "scripts": {
     "check": "repo-check",
-    "ci": "npm run lint && npm run test",
+    "ci": "npm run lint && npm run check && npm run test",
     "dev": "nodemon",
     "lint": "eslint --fix --ignore-path .gitignore --ext .js,.ts .",
     "postversion": "git push && git push --tags",
