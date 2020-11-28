@@ -62,15 +62,16 @@
     "url": "https://github.com/Shuunen/photo-archiver.git"
   },
   "scripts": {
-    "check": "npx repo-check",
-    "ci": "npm run test",
+    "check": "repo-check",
+    "ci": "npm run lint && npm run check && npm run test",
     "dev": "nodemon",
     "lint": "eslint --fix --ignore-path .gitignore --ext .js,.ts .",
     "postversion": "git push && git push --tags",
+    "preversion": "npm run ci",
     "start": "ts-node src/start.ts",
-    "test": "npm run lint && npm run check && npm run tests:unit",
-    "tests:unit": "jest",
-    "tests:unit:watch": "jest --watch",
+    "test": "jest",
+    "test:report": "ts-node src/start.ts --no-questions --no-overwrite --reArchive --verbose > tests/expected-results.txt",
+    "test:watch": "jest --watch",
     "update": "npx npm-check-updates -u"
   },
   "version": "0.1.0"
