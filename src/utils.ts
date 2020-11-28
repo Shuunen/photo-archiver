@@ -16,7 +16,7 @@ class Utils {
 
   readableDirs (directories: string[], redundantPath = Config.path): string {
     return directories.map(dir => {
-      if (redundantPath) {
+      if (redundantPath.length > 0) {
         return this.readablePath(dir).replace(redundantPath, '')
       }
       return this.readablePath(dir)
@@ -24,12 +24,10 @@ class Utils {
   }
 
   async fileExists (filepath: string): Promise<boolean> {
-    return statAsync(filepath)
+    return await statAsync(filepath)
       .then(stats => stats.isFile())
       .catch(err => {
-        if (err.message.includes('no such file')) {
-          return false
-        }
+        if (err.message.includes('no such file') === true) return false
         throw err
       })
   }
@@ -39,7 +37,7 @@ class Utils {
     if (!exists) {
       return
     }
-    return unlinkAsync(filepath)
+    return await unlinkAsync(filepath)
   }
 
   async copyFile (source: string, dest: string, overwrite = false): Promise<void> {
@@ -54,11 +52,11 @@ class Utils {
       }
       await this.deleteFile(dest)
     }
-    return copyFileAsync(source, dest)
+    return await copyFileAsync(source, dest)
   }
 
-  async sleep (ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, (ms || 1000)))
+  async sleep (ms = 1000): Promise<void> {
+    return await new Promise(resolve => setTimeout(resolve, ms))
   }
 }
 

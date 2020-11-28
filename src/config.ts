@@ -3,31 +3,20 @@ import * as minimist from 'minimist'
 import { posix } from 'path'
 const currentPath = process.cwd().split('\\').join('/')
 
-interface ConfigOptions {
-  compress?: boolean
-  forceSsim?: boolean
-  marker?: string
-  overwrite?: boolean
-  path?: string
-  processOne?: boolean
-  questions?: boolean
-  reArchive?: boolean
-  silent?: boolean
-  verbose?: boolean
+class ConfigDefaults {
+  compress = true
+  forceSsim = false
+  marker = '-archived' // my-photo.jpg => my-photo-archived.jpg
+  overwrite = false // if true replace original photos, else new files will be generated (using config marker)
+  path = posix.join(currentPath, '/tests')
+  processOne = false
+  questions = true
+  reArchive = true // true : will replace previously archived files
+  silent = false // avoid terminal logging
+  verbose = false
 }
 
-export const defaults: ConfigOptions = {
-  compress: true,
-  forceSsim: false,
-  marker: '-archived', // my-photo.jpg => my-photo-archived.jpg
-  overwrite: false, // if true replace original photos, else new files will be generated (using config marker)
-  path: posix.join(currentPath, '/tests'),
-  processOne: false,
-  questions: true,
-  reArchive: true, // true : will replace previously archived files
-  silent: false, // avoid terminal logging
-  verbose: false,
-}
+export const defaults = new ConfigDefaults()
 
 const questions = [
   {
@@ -56,35 +45,24 @@ const questions = [
 const args = process.argv.slice(2)
 const data = minimist(args, { default: defaults })
 
-class Config {
-  compress = defaults.compress;
-  forceSsim = defaults.forceSsim
-  marker = defaults.marker
-  overwrite = defaults.overwrite
-  path = defaults.path
-  processOne = defaults.processOne
-  questions = defaults.questions
-  reArchive = defaults.reArchive
-  silent = defaults.silent
-  verbose = defaults.verbose
-
+class Config extends ConfigDefaults {
   constructor (data: minimist.ParsedArgs) {
-    // console.log('Config : in constructor')
+    super()
     const { compress, forceSsim, marker, overwrite, path, processOne, questions, reArchive, silent, verbose } = data
     this.set({ compress, forceSsim, marker, overwrite, path, processOne, questions, reArchive, silent, verbose })
   }
 
   async init (): Promise<string> {
     if (this.questions) {
-      const answers: ConfigOptions = await inquirer.prompt(questions)
+      const answers: ConfigDefaults = await inquirer.prompt(questions)
       this.set({ ...data, ...answers })
       return 'Config augmented via questions'
     }
     return 'Config with defaults'
   }
 
-  set (data: ConfigOptions): void {
-    Object.assign(this, defaults, data)
+  set (data: Partial<ConfigDefaults>): void {
+    Object.assign(this, data)
   }
 }
 

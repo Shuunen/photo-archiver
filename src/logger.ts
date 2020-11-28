@@ -44,13 +44,12 @@ class Logger {
     signale.success(...things)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error (...things: any): void {
     if (things.length === 1) {
       things = things[0]
     }
-    if (!Config.verbose && things.message) {
-      if (things.message.message) {
+    if (!Config.verbose && typeof things.message !== 'undefined') {
+      if (typeof things.message.message !== 'undefined') {
         things.message = things.message.message
       } else {
         things = things.message

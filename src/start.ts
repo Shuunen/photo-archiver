@@ -1,4 +1,4 @@
-import Config from './config'
 import { startProcess } from '.'
+import Config from './config'
 
-Config.init().then(() => startProcess()).catch((err: Error) => console.error(err))
+Config.init().then(async () => await startProcess()).catch((err: Error) => console.error(err))
