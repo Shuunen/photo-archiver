@@ -1,7 +1,5 @@
 language: node_js
 
-env: NODE_ENV=production
-
-install: npm install --production=false
+install: npm ci
 
 script: npm run ci
