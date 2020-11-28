@@ -1,4 +1,4 @@
-export class DirInfos {
+export class DirectoryInfos {
   name = '' // folder name
   year = -1
   month = -1

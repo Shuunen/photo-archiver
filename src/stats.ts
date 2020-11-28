@@ -6,7 +6,7 @@ import { table, TableColumns, TableUserConfig } from 'table'
 import Config from './config'
 import Logger from './logger'
 import Stat from './stat'
-import Utils from './utils'
+import { readableDirectories } from './utils'
 
 class Stats {
   compress: Stat = new Stat()
@@ -55,7 +55,7 @@ class Stats {
     if (data.failedPaths.length === 0) {
       row.push(spacer)
     } else {
-      row.push(Utils.readableDirs(data.failedPaths))
+      row.push(readableDirectories(data.failedPaths))
       // row.push('bla bla bla')
     }
     return row
@@ -83,7 +83,7 @@ class Stats {
     const firstColumn: TableColumns = { width: 20, alignment: 'right' }
     const countColumn: TableColumns = { width: 7 }
     const pathsColumn: TableColumns = { width: 120, wrapWord: true }
-    const opts: TableUserConfig = {
+    const options: TableUserConfig = {
       columns: {
         0: firstColumn,
         1: countColumn,
@@ -94,7 +94,7 @@ class Stats {
       },
     }
     if (!Config.silent) {
-      console.log(table(data, opts))
+      console.log(table(data, options))
     }
     if (this.readDir.fail > 0) {
       Logger.warn('un-parsable directories cannot have their photos date-fixed, you should fix these directory names.\n')
