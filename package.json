@@ -64,7 +64,7 @@
   },
   "scripts": {
     "check": "repo-check",
-    "ci": "npm run lint && npm run check && npm run test",
+    "ci": "npm run lint && npm run test",
     "dev": "nodemon",
     "lint": "eslint --fix --ignore-path .gitignore --ext .js,.ts .",
     "postversion": "git push && git push --tags",
