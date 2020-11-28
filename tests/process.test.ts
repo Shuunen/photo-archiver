@@ -1,13 +1,13 @@
 /* global beforeEach, jest, test, expect */
 
+import { startProcess } from '../src'
 import Config from '../src/config'
 import Stats from '../src/stats'
-import { startProcess } from '../src'
 
-beforeEach(() => {
+beforeEach(async () => {
   jest.setTimeout(20000)
   Config.set({ overwrite: false, reArchive: true, silent: true })
-  return startProcess()
+  return await startProcess()
 })
 
 test('tests photos should always be processed the same way', () => {
@@ -25,9 +25,9 @@ test('tests photos should always be processed the same way', () => {
   }
 
   if (windows) {
-    expect(Stats.compress.success).toBe(5)
+    expect(Stats.compress.success).toBe(4)
     expect(Stats.compress.skip).toBe(2)
-    expect(Stats.compress.fail).toBe(2)
+    expect(Stats.compress.fail).toBe(3)
   } else {
     expect(Stats.compress.success).toBe(3)
     expect(Stats.compress.skip).toBe(1)
@@ -35,8 +35,8 @@ test('tests photos should always be processed the same way', () => {
   }
 
   if (windows) {
-    expect(Stats.dateFix1.success).toBe(7)
-    expect(Stats.dateFix1.skip).toBe(2)
+    expect(Stats.dateFix1.success).toBe(6)
+    expect(Stats.dateFix1.skip).toBe(3)
     expect(Stats.dateFix1.fail).toBe(0)
   } else {
     expect(Stats.dateFix1.success).toBe(5)
@@ -55,9 +55,9 @@ test('tests photos should always be processed the same way', () => {
   }
 
   if (windows) {
-    expect(Stats.exifRepair1.success).toBe(6)
+    expect(Stats.exifRepair1.success).toBe(5)
     expect(Stats.exifRepair1.skip).toBe(2)
-    expect(Stats.exifRepair1.fail).toBe(1)
+    expect(Stats.exifRepair1.fail).toBe(2)
   } else {
     expect(Stats.exifRepair1.success).toBe(0)
     expect(Stats.exifRepair1.skip).toBe(6)
