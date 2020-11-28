@@ -6,11 +6,12 @@ module.exports = {
     node: true,
   },
   extends: [
+    'plugin:unicorn/recommended',
     'standard-with-typescript',
   ],
   parserOptions: {
     project: './tsconfig.json',
   },
-  plugins: [],
+  plugins: ['unicorn'],
   rules,
 }

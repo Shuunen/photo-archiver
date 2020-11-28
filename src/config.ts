@@ -1,6 +1,6 @@
 import * as inquirer from 'inquirer'
 import * as minimist from 'minimist'
-import { posix } from 'path'
+import { join } from './utils'
 const currentPath = process.cwd().split('\\').join('/')
 
 class ConfigDefaults {
@@ -8,7 +8,7 @@ class ConfigDefaults {
   forceSsim = false
   marker = '-archived' // my-photo.jpg => my-photo-archived.jpg
   overwrite = false // if true replace original photos, else new files will be generated (using config marker)
-  path = posix.join(currentPath, '/tests')
+  path = join(currentPath, '/tests')
   processOne = false
   questions = true
   reArchive = true // true : will replace previously archived files
@@ -42,8 +42,8 @@ const questions = [
 // if process called with --plop --data=2
 // argv will looks like ['node', 'C:\path\to\photo-archiver', '--plop', '--data=2']
 // and args like ['--plop', '--data=2']
-const args = process.argv.slice(2)
-const data = minimist(args, { default: defaults })
+const arguments_ = process.argv.slice(2)
+const data = minimist(arguments_, { default: defaults })
 
 class Config extends ConfigDefaults {
   constructor (data: minimist.ParsedArgs) {

@@ -1,5 +1,5 @@
-import * as signale from 'signale' // eslint-disable-line no-unused-vars
-import Config from './config' // eslint-disable-line no-unused-vars
+import * as signale from 'signale'
+import Config from './config'
 
 class Logger {
   start (...things: Array<{}>): void {
