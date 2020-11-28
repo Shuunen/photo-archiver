@@ -9,6 +9,10 @@
 
 > My personal photo archiver, check folder structure, compress images, fix exif is needed...
 
+## Disclaimer
+
+Even if I'm maintaining this old project of mine, the codebase is old & messy, I'm not proud of what the younger version of me produced, the source code is not clean or well organized as my recent projects. Be cool.
+
 ## Usage
 
 `npm install && npm start`
@@ -18,6 +22,10 @@ Then you'll be guided :)
 ## Options
 
 `npm start --path="/path/to/folder"` will pre-fill the working dir
+
+## Todo
+
+- [ ] bring back `npm run check` into the `ci` npm task when `repo-checker` will release a fix for TS project & eslint conf
 
 ## Thanks
 
