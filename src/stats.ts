@@ -2,7 +2,7 @@
 import * as chalk from 'chalk'
 import * as prettyMs from 'pretty-ms'
 import { getTimestampMs } from 'shuutils'
-import { ColumnConfig, table, TableUserConfig } from 'table' // eslint-disable-line no-unused-vars
+import { table, TableColumns, TableUserConfig } from 'table'
 import Config from './config'
 import Logger from './logger'
 import Stat from './stat'
@@ -32,19 +32,19 @@ class Stats {
     const row = [label]
     const spacer = '  '
     // Column 1
-    if (!data.success) {
+    if (data.success === 0) {
       row.push(spacer + '0')
     } else {
       row.push(spacer + chalk.green(data.success.toString()))
     }
     // Column 2
-    if (!data.skip) {
+    if (data.skip === 0) {
       row.push(spacer + '0')
     } else {
       row.push(spacer + chalk.yellow(data.skip.toString()))
     }
     // Column 3
-    if (!data.fail) {
+    if (data.fail === 0) {
       row.push(spacer + '0')
     } else {
       row.push(spacer + chalk.red(data.fail.toString()))
@@ -52,7 +52,7 @@ class Stats {
     // Column 4
     row.push(spacer + chalk.white(data.total.toString()))
     // Column 5
-    if (!data.failedPaths) {
+    if (data.failedPaths.length === 0) {
       row.push(spacer)
     } else {
       row.push(Utils.readableDirs(data.failedPaths))
@@ -71,18 +71,18 @@ class Stats {
       this.getMetricRow('Exif repaired 1/2', this.exifRepair1),
       this.getMetricRow('Exif repaired 2/2', this.exifRepair2),
     ]
-    if (this.fileDeletion.fail) {
+    if (this.fileDeletion.fail > 0) {
       data.push(this.getMetricRow('File deletions', this.fileDeletion))
     }
-    if (this.fileCopy.fail) {
+    if (this.fileCopy.fail > 0) {
       data.push(this.getMetricRow('File copy', this.fileCopy))
     }
-    if (this.readDir.fail) {
+    if (this.readDir.fail > 0) {
       data.push(this.getMetricRow('Dirname parsed', this.readDir))
     }
-    const firstColumn: ColumnConfig = { width: 20, alignment: 'right' }
-    const countColumn: ColumnConfig = { width: 7 }
-    const pathsColumn: ColumnConfig = { width: 120, wrapWord: true }
+    const firstColumn: TableColumns = { width: 20, alignment: 'right' }
+    const countColumn: TableColumns = { width: 7 }
+    const pathsColumn: TableColumns = { width: 120, wrapWord: true }
     const opts: TableUserConfig = {
       columns: {
         0: firstColumn,
@@ -96,18 +96,18 @@ class Stats {
     if (!Config.silent) {
       console.log(table(data, opts))
     }
-    if (this.readDir.fail) {
+    if (this.readDir.fail > 0) {
       Logger.warn('un-parsable directories cannot have their photos date-fixed, you should fix these directory names.\n')
     }
   }
 
   private showMetrics (): void {
-    const timeElapsed: number = getTimestampMs() - this.startTime
+    const timeElapsed = getTimestampMs() - this.startTime
     // const timeReadable: string = prettyMs(timeElapsed, { verbose: true })
-    const photoProcessed: number = this.photoProcess.total
-    const timeElapsedPerPhoto = Math.round(timeElapsed / photoProcessed) || 0
+    const photoProcessed = this.photoProcess.total
+    const timeElapsedPerPhoto = (timeElapsed > 0 && photoProcessed > 0) ? Math.round(timeElapsed / photoProcessed) : 0
     if (photoProcessed > 0) {
-      Logger.log(`\nFound ${photoProcessed} photos, ${this.photoProcess.success} has been processed & ${this.photoProcess.skip || 'no photos'} has been skipped`)
+      Logger.log(`\nFound ${photoProcessed} photos, ${this.photoProcess.success} has been processed & ${this.photoProcess.skip} has been skipped`)
       if (timeElapsedPerPhoto > 0) {
         Logger.log(`Spent an average of ${prettyMs(timeElapsedPerPhoto, { verbose: true })} per photo`)
       }
