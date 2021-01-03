@@ -48,7 +48,7 @@ Then you'll be guided :)
 - [Signale](https://github.com/klauscfhq/signale) © Klaus Sinani
 - [SmallFry](https://github.com/dwbuiten/smallfry) © 2014 Derek Buitenhuis
 - [Table](https://github.com/gajus/table) © 2016 Gajus Kuizinas
-- [travis-ci.com](https://travis-ci.com) : for providing free continuous deployments
+- [Travis-ci.com](https://travis-ci.com) : for providing free continuous deployments
 - [Typescript](https://github.com/Microsoft/TypeScript)
 
 Big thumbs up for all of them <3
