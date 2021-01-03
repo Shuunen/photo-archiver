@@ -2,7 +2,7 @@
 
 [![GitHub license](https://img.shields.io/github/license/shuunen/photo-archiver.svg?color=informational)](https://github.com/Shuunen/photo-archiver/blob/master/LICENSE)
 
-[![Build Status](https://travis-ci.org/Shuunen/photo-archiver.svg?branch=master)](https://travis-ci.org/Shuunen/photo-archiver)
+[![Build Status](https://travis-ci.com/Shuunen/photo-archiver.svg?branch=master)](https://travis-ci.com/Shuunen/photo-archiver)
 [![David](https://img.shields.io/david/shuunen/photo-archiver.svg)](https://david-dm.org/shuunen/photo-archiver)
 [![LGTM Grade](https://img.shields.io/lgtm/grade/javascript/github/Shuunen/photo-archiver.svg)](https://lgtm.com/projects/g/Shuunen/photo-archiver)
 [![Scrutinizer Score](https://scrutinizer-ci.com/g/Shuunen/photo-archiver/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/Shuunen/photo-archiver)
@@ -48,7 +48,7 @@ Then you'll be guided :)
 - [Signale](https://github.com/klauscfhq/signale) © Klaus Sinani
 - [SmallFry](https://github.com/dwbuiten/smallfry) © 2014 Derek Buitenhuis
 - [Table](https://github.com/gajus/table) © 2016 Gajus Kuizinas
-- [Travis-ci.org](https://travis-ci.org) : for providing free continuous deployments
+- [travis-ci.com](https://travis-ci.com) : for providing free continuous deployments
 - [Typescript](https://github.com/Microsoft/TypeScript)
 
 Big thumbs up for all of them <3
