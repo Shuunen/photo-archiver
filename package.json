@@ -12,7 +12,7 @@
     "progress": "2.0.3",
     "shuutils": "4.3.0",
     "signale": "1.4.0",
-    "table": "6.0.4",
+    "table": "6.0.7",
     "typescript": "4.1.2"
   },
   "description": "A personal photo archiver",
