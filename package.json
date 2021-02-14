@@ -21,7 +21,7 @@
     "@types/inquirer": "7.3.1",
     "@types/jest": "26.0.20",
     "@types/minimist": "1.2.1",
-    "@types/node": "14.14.27",
+    "@types/node": "14.14.28",
     "@types/pretty-ms": "5.0.1",
     "@types/progress": "2.0.3",
     "@types/signale": "1.4.1",
