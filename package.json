@@ -3,7 +3,7 @@
   "bugs": "https://github.com/Shuunen/photo-archiver/issues",
   "dependencies": {
     "chalk": "4.1.0",
-    "exiftool-vendored": "12.3.1",
+    "exiftool-vendored": "13.2.0",
     "globby": "11.0.2",
     "inquirer": "7.3.3",
     "minimist": "1.2.5",
