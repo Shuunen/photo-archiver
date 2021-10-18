@@ -19,7 +19,7 @@
   "devDependencies": {
     "@types/globby": "9.1.0",
     "@types/inquirer": "7.3.1",
-    "@types/jest": "26.0.20",
+    "@types/jest": "26.0.24",
     "@types/minimist": "1.2.1",
     "@types/node": "14.14.31",
     "@types/pretty-ms": "5.0.1",
