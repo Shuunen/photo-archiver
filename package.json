@@ -13,7 +13,7 @@
     "shuutils": "4.3.0",
     "signale": "1.4.0",
     "table": "6.0.7",
-    "typescript": "4.2.2"
+    "typescript": "4.9.5"
   },
   "description": "A personal photo archiver",
   "devDependencies": {
