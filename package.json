@@ -55,7 +55,7 @@
   "license": "GPL-3.0",
   "name": "@shuunen/photo-archiver",
   "optionalDependencies": {
-    "acorn": "8.0.5"
+    "acorn": "8.11.3"
   },
   "private": true,
   "repository": {
